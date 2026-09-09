@@ -174,7 +174,6 @@ export default async function handler(req, res) {
     const cleanAreaM2 = Number(areaM2) > 0 ? Number(areaM2) : 1000;
     const cleanOrderId = sanitizeString(order.id, 50);
 
-    const SENDER_EMAIL = 'peyzajdetay@gmail.com';
     const TARGET_EMAILS = ['hhyildirimm@gmail.com', 'peyzajdetay@gmail.com'];
     const emailSubject = `🌿 [DETAY PEYZAJ SIPARIS] ${cleanOrderId} - ${cleanCustomerName} (${cleanAreaM2} m² - ${totalPrice} TL)`;
 

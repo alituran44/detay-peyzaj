@@ -42,9 +42,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['" Plus Jakarta Sans\', 'system-ui', 'sans-serif'],
- serif: ['\Playfair Display\', 'Georgia', 'serif'],
- },
+        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+      },
  boxShadow: {
  'glow': '0 0 30px -5px rgba(61, 148, 113, 0.3)',
  'glow-gold': '0 0 30px -5px rgba(212, 175, 55, 0.25)',

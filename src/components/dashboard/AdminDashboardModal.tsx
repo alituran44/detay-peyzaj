@@ -90,6 +90,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
   // Deliverable upload state
   const [newFileName, setNewFileName] = useState('');
   const [newFileType, setNewFileType] = useState<'dwg' | 'pdf' | 'excel' | 'image' | 'zip'>('dwg');
+  const [customInvoiceNumber, setCustomInvoiceNumber] = useState('');
 
   // Mail Templates & Sender Config State (peyzajdetay@gmail.com)
   const [mailConfig, setMailConfig] = useState<MailConfig>(getStoredMailConfig);
@@ -196,8 +197,6 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     setNewFileName('');
     alert(`"${newFileName}" dosyası başarıyla yüklendi! Müşterinin (${activeOrder.invoice.fullName || activeOrder.invoice.companyName}) portalında anında indirmeye açıldı.`);
   };
-
-  const [customInvoiceNumber, setCustomInvoiceNumber] = useState('');
 
   const handleUploadInvoiceFile = (orderId: string, file: File) => {
     const invNo = customInvoiceNumber.trim() || `GIB2026${Math.floor(100000000 + Math.random() * 900000000)}`;

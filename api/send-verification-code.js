@@ -164,11 +164,10 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Geçersiz e-posta formatı.' });
     }
 
-    const SENDER_EMAIL = 'peyzajdetay@gmail.com';
     const nameToGreet = sanitizeString(userName, 100) || 'Değerli Müşterimiz';
 
     // Dynamic fields with fallbacks
-    const emailSubject = customTemplate?.subject || `🌿 [Detay Peyzaj] Aktivasyon & Doğrulama Kodunuz: ${code}`;
+    const emailSubject = customTemplate?.subject || `🌿 [Detay Peyzaj] Aktivasyon & Doğrulama Kodunuz: ${cleanCode}`;
     const heading = customTemplate?.heading || 'Güvenli Hesap & Portal Aktivasyonu';
     const badge = customTemplate?.badge || '6 HANELİ DOĞRULAMA KODU';
     const badgeColor = customTemplate?.badgeColor || '#22c55e';

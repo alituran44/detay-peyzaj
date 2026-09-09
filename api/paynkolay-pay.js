@@ -1,4 +1,4 @@
-﻿// Vercel Serverless Function - Paynkolay / Aktif Bank Sanal POS Gateway (ES Module)
+// Vercel Serverless Function - Paynkolay / Aktif Bank Sanal POS Gateway (ES Module)
 import crypto from 'crypto';
 
 // Default credentials
@@ -47,7 +47,7 @@ export default async function handler(req, res) {
     if (typeof body === 'string') {
       try {
         body = JSON.parse(body);
-      } catch (e) {
+      } catch {
         body = {};
       }
     }
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
       amount,
       cardInfo,
       customerInfo,
-      smsCode,
+      smsCode: _smsCode,
       is3DConfirm,
       customConfig,
     } = body || {};

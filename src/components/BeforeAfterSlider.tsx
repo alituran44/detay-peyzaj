@@ -75,18 +75,17 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({ onOpenOrde
               <span>5. Gün: Projelendirilmiş Mimari Tasarım</span>
             </div>
 
-            {/* "Before" Image (Clipped Left Layer) */}
+            {/* "Before" Image (Clipped Left Layer using CSS clipPath) */}
             <div
-              className="absolute inset-0 overflow-hidden pointer-events-none"
-              style={{ width: `${sliderPosition}%` }}
+              className="absolute inset-0 pointer-events-none"
+              style={{ clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)` }}
             >
               <img
                 src="/images/slider/S3.jpeg"
                 alt="Detay Peyzaj Ham Arsa ve Röleve Hali"
                 loading="lazy"
                 decoding="async"
-                className="absolute inset-0 w-full h-full object-cover max-w-none"
-                style={{ width: containerRef.current ? `${containerRef.current.clientWidth}px` : '100%' }}
+                className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-obsidian-950/20" />
               
