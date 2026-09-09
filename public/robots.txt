@@ -1,0 +1,6 @@
+﻿User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+Sitemap: https://detaypeyzaj.com.tr/sitemap.xml

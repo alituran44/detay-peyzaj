@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --color-obsidian-950: #070b09;
+  --color-obsidian-900: #0d120f;
+  --color-obsidian-850: #131915;
+  --color-obsidian-800: #1a221d;
+  --color-obsidian-750: #212c25;
+
+  --color-orange-950: #431407;
+  --color-orange-900: #7c2d12;
+  --color-orange-800: #9a3412;
+  --color-orange-700: #c2410c;
+  --color-orange-600: #ea580c;
+  --color-orange-500: #f97316;
+  --color-orange-400: #fb923c;
+  --color-orange-300: #fdba74;
+  --color-orange-200: #fed7aa;
+  --color-orange-100: #ffedd5;
+  --color-orange-50: #fff7ed;
+
+  --color-amber-950: #451a03;
+  --color-amber-900: #78350f;
+  --color-amber-800: #92400e;
+  --color-amber-700: #b45309;
+  --color-amber-600: #d97706;
+  --color-amber-500: #f59e0b;
+  --color-amber-400: #fbbf24;
+}
+
+@layer base {
+  body {
+    background-color: #070b09;
+    color: #f1f5f9;
+    font-family: var(--font-sans);
+  }
+}
+
+/* Custom Scrollbar in Orange & Amber */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d120f;
+}
+::-webkit-scrollbar-thumb {
+  background: #9a3412;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ea580c;
+}
+
+.glass-panel {
+  background: rgba(13, 18, 15, 0.90);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.shadow-glow {
+  box-shadow: 0 0 35px -5px rgba(249, 115, 22, 0.40);
+}
+
+.shadow-glow-sm {
+  box-shadow: 0 0 20px -3px rgba(249, 115, 22, 0.30);
+}
