@@ -474,6 +474,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setOrders((prev: StoredOrder[]) => [newOrder, ...prev]);
+    syncOrderToCloud(newOrder);
     return newOrder;
   };
 
@@ -486,61 +487,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       '5_teslim_edildi': 100,
     };
 
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) =>
-        o.id === orderId
-          ? { ...o, status: newStatus, progressPercent: progressMap[newStatus] }
-          : o
-      )
-    );
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
+        if (o.id === orderId) {
+          const updated = { ...o, status: newStatus, progressPercent: progressMap[newStatus] };
+          syncOrderToCloud(updated);
+          return updated;
+        }
+        return o;
+      });
+      return next;
+    });
   };
 
   const updateOrder = (orderId: string, updatedData: Partial<StoredOrder>) => {
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) =>
-        o.id === orderId
-          ? {
-              ...o,
-              ...updatedData,
-              // If invoice nested fields were passed, merge them cleanly
-              invoice: updatedData.invoice
-                ? { ...o.invoice, ...updatedData.invoice }
-                : o.invoice,
-            }
-          : o
-      )
-    );
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
+        if (o.id === orderId) {
+          const updated = {
+            ...o,
+            ...updatedData,
+            invoice: updatedData.invoice
+              ? { ...o.invoice, ...updatedData.invoice }
+              : o.invoice,
+          };
+          syncOrderToCloud(updated);
+          return updated;
+        }
+        return o;
+      });
+      return next;
+    });
   };
 
   const addDeliverableToOrder = (
     orderId: string,
     file: Omit<ProjectFile, 'uploadedAt' | 'downloadUrl'>
   ) => {
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) => {
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
           const newDeliverables = [
             ...(o.deliverables || []),
             {
               ...file,
               id: `deliv-${Date.now()}`,
-              downloadUrl: '#',
+              downloadUrl: `/api/download-file?orderId=${encodeURIComponent(orderId)}&fileName=${encodeURIComponent(file.name)}`,
               uploadedAt: new Date().toISOString(),
             },
           ];
-          return { ...o, deliverables: newDeliverables };
+          const updated = { ...o, deliverables: newDeliverables };
+          syncOrderToCloud(updated);
+          return updated;
         }
         return o;
-      })
-    );
+      });
+      return next;
+    });
   };
 
   const addCustomerDocument = (
     orderId: string,
     doc: Omit<CustomerUploadedDoc, 'id' | 'uploadedAt'>
   ) => {
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) => {
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
           const newDocs = [
             ...(o.customerDocuments || []),
@@ -548,27 +559,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               ...doc,
               id: `doc-${Date.now()}`,
               uploadedAt: new Date().toISOString(),
+              fileUrl: `/api/download-file?orderId=${encodeURIComponent(orderId)}&fileName=${encodeURIComponent(doc.fileName)}`,
             },
           ];
-          return { ...o, customerDocuments: newDocs };
+          const updated = { ...o, customerDocuments: newDocs };
+          syncOrderToCloud(updated);
+          return updated;
         }
         return o;
-      })
-    );
+      });
+      return next;
+    });
   };
 
   const deleteCustomerDocument = (orderId: string, docId: string) => {
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) => {
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
-          return {
+          const updated = {
             ...o,
             customerDocuments: (o.customerDocuments || []).filter((d) => d.id !== docId),
           };
+          syncOrderToCloud(updated);
+          return updated;
         }
         return o;
-      })
-    );
+      });
+      return next;
+    });
   };
 
   const issueInvoice = (
@@ -578,41 +596,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     invoiceFileName?: string
   ): string => {
     const invNo = customNumber?.trim() || `GIB2026${Math.floor(100000000 + Math.random() * 900000000)}`;
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) => {
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
-          return {
+          const updated = {
             ...o,
             invoiceIssued: true,
             invoiceNumber: invNo,
             invoiceDate: new Date().toISOString().split('T')[0],
-            invoiceUrl: invoiceUrl || '#',
+            invoiceUrl: invoiceUrl || `/api/download-file?orderId=${encodeURIComponent(orderId)}&fileName=${encodeURIComponent(invoiceFileName || `E-Fatura-${invNo}.pdf`)}`,
             invoiceFileName: invoiceFileName || `E-Fatura-${invNo}.pdf`,
           };
+          syncOrderToCloud(updated);
+          return updated;
         }
         return o;
-      })
-    );
+      });
+      return next;
+    });
     return invNo;
   };
 
   const updateOrderTasks = (orderId: string, tasks: ProjectTask[]) => {
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) => {
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
           const total = tasks.length;
           const completed = tasks.filter((t) => t.status === 'bitti').length;
           const progressPercent = total > 0 ? Math.round((completed / total) * 100) : o.progressPercent;
-          return {
+          const updated = {
             ...o,
             tasks,
             progressPercent,
             status: progressPercent === 100 ? '5_teslim_edildi' : o.status,
           };
+          syncOrderToCloud(updated);
+          return updated;
         }
         return o;
-      })
-    );
+      });
+      return next;
+    });
   };
 
   const toggleTaskStatus = (
@@ -620,8 +644,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     taskId: string,
     newStatus: 'bekliyor' | 'devam_ediyor' | 'bitti'
   ) => {
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) => {
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
           const currentTasks = o.tasks && o.tasks.length > 0
             ? o.tasks
@@ -637,22 +661,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const completed = updatedTasks.filter((t) => t.status === 'bitti').length;
           const progressPercent = total > 0 ? Math.round((completed / total) * 100) : o.progressPercent;
 
-          return {
+          const updated = {
             ...o,
             tasks: updatedTasks,
             progressPercent,
             status: progressPercent === 100 ? '5_teslim_edildi' : (o.status === '5_teslim_edildi' && progressPercent < 100 ? '4_3d_render' : o.status),
           };
+          syncOrderToCloud(updated);
+          return updated;
         }
         return o;
-      })
-    );
+      });
+      return next;
+    });
   };
 
   const addTaskToOrder = (orderId: string, title: string) => {
     if (!title.trim()) return;
-    setOrders((prev: StoredOrder[]) =>
-      prev.map((o: StoredOrder) => {
+    setOrders((prev: StoredOrder[]) => {
+      const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
           const currentTasks = o.tasks && o.tasks.length > 0
             ? o.tasks
@@ -672,15 +699,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const completed = updatedTasks.filter((t) => t.status === 'bitti').length;
           const progressPercent = total > 0 ? Math.round((completed / total) * 100) : o.progressPercent;
 
-          return {
+          const updated = {
             ...o,
             tasks: updatedTasks,
             progressPercent,
           };
+          syncOrderToCloud(updated);
+          return updated;
         }
         return o;
-      })
-    );
+      });
+      return next;
+    });
   };
 
   const syncOrderToCloud = async (order: StoredOrder) => {
@@ -716,28 +746,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setOrders((prev: StoredOrder[]) => {
             const mergedMap = new Map<string, StoredOrder>();
             
-            // First load server orders
+            // First load server orders (these come from cloud DB)
             json.orders.forEach((o: StoredOrder) => mergedMap.set(o.id, o));
             
-            // Merge with local orders
+            // Merge local orders only if missing from server
             prev.forEach((o: StoredOrder) => {
               if (!mergedMap.has(o.id)) {
                 mergedMap.set(o.id, o);
                 syncOrderToCloud(o);
               } else {
                 const serverOrd = mergedMap.get(o.id)!;
-                const localTasks = o.tasks || [];
-                const serverTasks = serverOrd.tasks || [];
+                // Merge local deliverables/docs if server is missing them
+                const mergedDocs = (serverOrd.customerDocuments && serverOrd.customerDocuments.length > 0)
+                  ? serverOrd.customerDocuments
+                  : o.customerDocuments;
                 mergedMap.set(o.id, {
-                  ...serverOrd,
                   ...o,
-                  tasks: localTasks.length >= serverTasks.length ? localTasks : serverTasks,
-                  progressPercent: Math.max(serverOrd.progressPercent || 0, o.progressPercent || 0),
+                  ...serverOrd,
+                  customerDocuments: mergedDocs,
                 });
               }
             });
 
-            const mergedList = Array.from(mergedMap.values());
+            const mergedList = Array.from(mergedMap.values()).sort(
+              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
             localStorage.setItem('detay_orders_v3', JSON.stringify(mergedList));
             return mergedList;
           });
@@ -750,7 +783,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     refreshCloudOrders();
-    const interval = setInterval(refreshCloudOrders, 10000); // 10s auto-refresh
+    const interval = setInterval(refreshCloudOrders, 4000); // 4s fast cross-device sync
     return () => clearInterval(interval);
   }, []);
 

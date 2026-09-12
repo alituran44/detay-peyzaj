@@ -34,6 +34,7 @@ import {
   CheckSquare,
   ListTodo,
   AlertCircle,
+  User,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatTL } from '../../utils/pricing';
@@ -757,62 +758,119 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                       );
                     })()}
 
-                    {/* Customer Uploaded Files (Tapu, Kroki, Fotoğraflar, Açıklamalar) */}
+                    {/* Customer Uploaded Files (Tapu, Kroki, DWG, Fotoğraflar, Açıklamalar) */}
                     <div className="bg-obsidian-950 p-6 rounded-3xl border border-orange-950 space-y-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <h4 className="text-xs font-bold uppercase tracking-wider text-white flex items-center gap-2">
                           <FileText className="w-4 h-4 text-orange-400" />
-                          <span>Müşterinin Yüklediği Evraklar & Fotoğraflar ({activeOrder.customerDocuments?.length || 0})</span>
+                          <span>Müşterinin Yüklediği Evraklar & DWG Çizimleri ({activeOrder.customerDocuments?.length || 0})</span>
                         </h4>
+                        {activeOrder.customerDocuments && activeOrder.customerDocuments.length > 0 && (
+                          <span className="text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded font-mono">
+                            ✓ {activeOrder.customerDocuments.length} Belge Hazır & İndirilebilir
+                          </span>
+                        )}
                       </div>
 
                       {/* Documents Grid */}
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        {activeOrder.customerDocuments?.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="p-3.5 rounded-xl bg-obsidian-900 border border-orange-950 flex items-center justify-between gap-3"
-                          >
-                            <div className="flex items-center gap-2.5 overflow-hidden">
-                              <div className="w-8 h-8 rounded-lg bg-orange-950/80 border border-orange-800 flex items-center justify-center text-orange-400 shrink-0">
-                                <FileText className="w-4 h-4" />
-                              </div>
-                              <div className="overflow-hidden">
-                                <div className="text-xs font-bold text-white truncate">{doc.title}</div>
-                                <div className="text-[10px] text-slate-400 font-mono truncate">{doc.fileName} ({doc.fileSize})</div>
-                              </div>
-                            </div>
+                      {activeOrder.customerDocuments && activeOrder.customerDocuments.length > 0 ? (
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          {activeOrder.customerDocuments.map((doc) => {
+                            const isDwg = doc.fileName.toLowerCase().endsWith('.dwg') || doc.fileName.toLowerCase().endsWith('.dxf');
+                            const isReceipt = doc.category === 'dekont' || doc.title.toLowerCase().includes('dekont');
+                            const downloadUrl = `/api/download-file?orderId=${encodeURIComponent(activeOrder.id)}&fileName=${encodeURIComponent(doc.fileName)}`;
 
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (doc.fileUrl && doc.fileUrl !== '#') {
-                                  const a = document.createElement('a');
-                                  a.href = doc.fileUrl;
-                                  a.download = doc.fileName;
-                                  document.body.appendChild(a);
-                                  a.click();
-                                  document.body.removeChild(a);
-                                } else {
-                                  alert(`"${doc.fileName}" dosyası e-postanıza (peyzajdetay@gmail.com & hhyildirimm@gmail.com) ek dosya (attachment) olarak iletilmiştir. Gmail ekler kısmından da anında indirebilirsiniz.`);
-                                }
-                              }}
-                              className="px-2.5 py-1 bg-obsidian-950 hover:bg-orange-950 border border-orange-900 text-orange-300 rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer shrink-0"
-                            >
-                              <Download className="w-3 h-3" />
-                              <span>İndir</span>
-                            </button>
+                            return (
+                              <div
+                                key={doc.id}
+                                className="p-3.5 rounded-2xl bg-obsidian-900 border border-orange-950/80 hover:border-orange-500/50 transition-all flex items-center justify-between gap-3 shadow-sm"
+                              >
+                                <div className="flex items-center gap-2.5 overflow-hidden">
+                                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                                    isDwg
+                                      ? 'bg-orange-600/20 border border-orange-500/50 text-orange-400'
+                                      : isReceipt
+                                      ? 'bg-emerald-600/20 border border-emerald-500/50 text-emerald-400'
+                                      : 'bg-amber-600/20 border border-amber-500/50 text-amber-400'
+                                  }`}>
+                                    <FileText className="w-4 h-4" />
+                                  </div>
+                                  <div className="overflow-hidden">
+                                    <div className="text-xs font-bold text-white truncate">{doc.title}</div>
+                                    <div className="text-[10px] text-slate-400 font-mono truncate">{doc.fileName} • {doc.fileSize}</div>
+                                  </div>
+                                </div>
+
+                                <a
+                                  href={downloadUrl}
+                                  download={doc.fileName}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1.5 bg-orange-600/20 hover:bg-orange-600 text-orange-300 hover:text-white border border-orange-500/40 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shrink-0 transition-all shadow-sm"
+                                  title="Dosyayı Bilgisayarına İndir"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                  <span>İndir</span>
+                                </a>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="p-4 rounded-2xl bg-obsidian-900/60 border border-dashed border-orange-950 text-center text-xs text-slate-400 space-y-1">
+                          <p>Bu sipariş için henüz panel üzerinden dosya eklenmedi.</p>
+                          <p className="text-[11px] text-slate-500">
+                            Yüklenen tüm dosyalar mimarımızın e-posta adresine (<strong>peyzajdetay@gmail.com</strong> / <strong>hhyildirimm@gmail.com</strong>) ek dosya olarak da iletilmektedir.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Customer Full Contact & Address Card */}
+                      <div className="grid sm:grid-cols-2 gap-3 bg-obsidian-900/90 p-4 rounded-2xl border border-orange-950/80 text-xs">
+                        <div className="space-y-1 text-slate-300">
+                          <div className="font-bold text-white mb-1 flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-orange-400" />
+                            <span>İletişim Bilgileri:</span>
                           </div>
-                        ))}
+                          <div><span className="text-slate-500">Müşteri:</span> <strong className="text-white">{activeOrder.invoice.fullName || activeOrder.invoice.companyName}</strong></div>
+                          <div><span className="text-slate-500">Telefon:</span> <a href={`tel:${activeOrder.invoice.phone}`} className="text-orange-300 font-mono font-bold hover:underline">{activeOrder.invoice.phone}</a></div>
+                          <div><span className="text-slate-500">E-Posta:</span> <span className="text-slate-200">{activeOrder.invoice.email || activeOrder.userEmail}</span></div>
+                          <div><span className="text-slate-500">TCKN / Vergi No:</span> <span className="font-mono text-slate-200">{activeOrder.invoice.tcKimlikNo || activeOrder.invoice.taxNumber || '-'}</span></div>
+                        </div>
+
+                        <div className="space-y-1 text-slate-300">
+                          <div className="font-bold text-white mb-1 flex items-center gap-1.5">
+                            <MapPin className="w-3.5 h-3.5 text-orange-400" />
+                            <span>Konum & Teslimat:</span>
+                          </div>
+                          <div><span className="text-slate-500">Şehir / İlçe:</span> <strong className="text-white">{activeOrder.invoice.city} / {activeOrder.invoice.district}</strong></div>
+                          <div><span className="text-slate-500">Açık Adres:</span> <span className="text-slate-200">{activeOrder.invoice.fullAddress || '-'}</span></div>
+                          <div>
+                            <span className="text-slate-500">Teslimat Biçimi:</span>{' '}
+                            {activeOrder.shippingOption ? (
+                              <span className="text-orange-400 font-bold">📦 Fiziki Ozalit Kargo (+1.500 TL)</span>
+                            ) : (
+                              <span className="text-emerald-400 font-semibold">💻 Dijital AutoCAD & DWG</span>
+                            )}
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Ödeme Yöntemi:</span>{' '}
+                            <span className="text-white font-mono font-bold">
+                              {activeOrder.paymentMethod === 'credit_card' ? '💳 Paynkolay 3D Secure Kredi Kartı' : '🏦 Banka Havalesi / FAST'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Customer Note */}
-                      <div className="space-y-1.5 pt-2 border-t border-orange-950/80">
-                        <span className="text-xs font-semibold text-slate-300">Müşterinin Yazdığı İstek & Açıklama Notu:</span>
-                        <div className="p-3.5 rounded-xl bg-obsidian-900 border border-orange-950 text-xs text-slate-200 leading-relaxed font-sans">
-                          "{activeOrder.notes || 'Müşteri özel bir istek notu belirtmedi.'}"
+                      {activeOrder.notes && (
+                        <div className="space-y-1.5 pt-2 border-t border-orange-950/80">
+                          <span className="text-xs font-semibold text-slate-300">Müşterinin Yazdığı İstek & Açıklama Notu:</span>
+                          <div className="p-3.5 rounded-xl bg-obsidian-900 border border-orange-950 text-xs text-slate-200 leading-relaxed font-sans">
+                            "{activeOrder.notes}"
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* Upload Finished Deliverables for Client */}

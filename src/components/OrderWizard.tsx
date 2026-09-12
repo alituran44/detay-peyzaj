@@ -180,7 +180,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
     });
   };
 
-  const ALLOWED_DOC_EXTENSIONS = ['.dwg', '.dxf', '.pdf', '.png', '.jpg', '.jpeg', '.zip', '.xlsx'];
+  const ALLOWED_DOC_EXTENSIONS = ['.dwg', '.dxf', '.pdf', '.png', '.jpg', '.jpeg', '.zip', '.rar', '.xlsx'];
   const ALLOWED_RECEIPT_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.webp'];
   const ALLOWED_PHOTO_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.mp4', '.mov'];
   const DANGEROUS_EXTENSIONS = ['.exe', '.bat', '.cmd', '.sh', '.php', '.js', '.vbs', '.scr', '.com', '.pif', '.msi', '.jar'];
@@ -189,7 +189,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
   const handleFileUpload = (type: 'titleDeed' | 'sketchPlan' | 'receipt', file: File) => {
     setUploadError(null);
     setCardValidationError(null);
-    const fileNameLower = file.name.toLowerCase();
+    const fileNameLower = (file.name || '').toLowerCase();
 
     // Check dangerous executable extensions
     if (DANGEROUS_EXTENSIONS.some((ext) => fileNameLower.endsWith(ext))) {
@@ -204,17 +204,29 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
     }
 
     if (type === 'sketchPlan') {
-      if (!fileNameLower.endsWith('.dwg') && !fileNameLower.endsWith('.dxf')) {
-        setUploadError('Bu alana sadece AutoCAD .DWG formatında çizim dosyası yükleyebilirsiniz. PDF veya görsel formatlar kabul edilmemektedir.');
+      const isCadFile =
+        fileNameLower.endsWith('.dwg') ||
+        fileNameLower.endsWith('.dxf') ||
+        fileNameLower.endsWith('.zip') ||
+        fileNameLower.endsWith('.rar') ||
+        fileNameLower.endsWith('.pdf') ||
+        file.type.includes('acad') ||
+        file.type.includes('dwg') ||
+        file.type.includes('zip') ||
+        file.type === '' || // Mobile file pickers often don't provide MIME type
+        file.type === 'application/octet-stream';
+
+      if (!isCadFile) {
+        setUploadError('Lütfen projenize ait AutoCAD .DWG, .DXF, .ZIP veya Vaziyet Planı dosyasını seçiniz.');
         return;
       }
     } else if (type === 'receipt') {
-      if (!ALLOWED_RECEIPT_EXTENSIONS.some((ext) => fileNameLower.endsWith(ext))) {
+      if (!ALLOWED_RECEIPT_EXTENSIONS.some((ext) => fileNameLower.endsWith(ext)) && file.type && !file.type.includes('image') && !file.type.includes('pdf')) {
         setUploadError('Dekont için izin verilen formatlar: .PDF, .PNG, .JPG, .JPEG, .WEBP');
         return;
       }
     } else {
-      if (!ALLOWED_DOC_EXTENSIONS.some((ext) => fileNameLower.endsWith(ext))) {
+      if (!ALLOWED_DOC_EXTENSIONS.some((ext) => fileNameLower.endsWith(ext)) && file.type && !file.type.includes('image') && !file.type.includes('pdf')) {
         setUploadError('İzin verilen dosya formatları: .PDF, .DWG, .DXF, .PNG, .JPG, .ZIP');
         return;
       }
@@ -313,6 +325,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
   };
 
   const finalizeOrder = async () => {
+    const targetOrderId = orderNumber || `DP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const uploadedDocsList = [];
     if (formData.documents.sketchPlan) {
       uploadedDocsList.push({
@@ -321,7 +334,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
         category: 'kroki' as const,
         fileName: formData.documents.sketchPlan.name,
         fileSize: `${(formData.documents.sketchPlan.size / (1024 * 1024) || 3.5).toFixed(1)} MB`,
-        fileUrl: '#',
+        fileUrl: `/api/download-file?orderId=${encodeURIComponent(targetOrderId)}&fileName=${encodeURIComponent(formData.documents.sketchPlan.name)}`,
         uploadedAt: new Date().toISOString(),
       });
     }
@@ -332,7 +345,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
         category: 'tapu' as const,
         fileName: formData.documents.titleDeed.name,
         fileSize: `${(formData.documents.titleDeed.size / (1024 * 1024) || 1.8).toFixed(1)} MB`,
-        fileUrl: '#',
+        fileUrl: `/api/download-file?orderId=${encodeURIComponent(targetOrderId)}&fileName=${encodeURIComponent(formData.documents.titleDeed.name)}`,
         uploadedAt: new Date().toISOString(),
       });
     }
@@ -343,7 +356,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
         category: 'dekont' as const,
         fileName: formData.documents.receipt.name,
         fileSize: `${(formData.documents.receipt.size / (1024 * 1024) || 1.2).toFixed(1)} MB`,
-        fileUrl: '#',
+        fileUrl: `/api/download-file?orderId=${encodeURIComponent(targetOrderId)}&fileName=${encodeURIComponent(formData.documents.receipt.name)}`,
         uploadedAt: new Date().toISOString(),
       });
     }
@@ -354,7 +367,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
         category: 'fotograf' as const,
         fileName: photo.name,
         fileSize: `${(photo.size / (1024 * 1024) || 2.4).toFixed(1)} MB`,
-        fileUrl: '#',
+        fileUrl: `/api/download-file?orderId=${encodeURIComponent(targetOrderId)}&fileName=${encodeURIComponent(photo.name)}`,
         uploadedAt: new Date().toISOString(),
       });
     });
@@ -1350,10 +1363,10 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 text-xs font-bold text-white">
                       <FileCheck className="w-4 h-4 text-orange-400" />
-                      <span>AutoCAD .DWG Dosyası</span>
+                      <span>AutoCAD .DWG / Kroki Dosyası</span>
                     </div>
                     <span className="text-[10px] bg-orange-950 text-orange-400 border border-orange-700/60 px-2 py-0.5 rounded font-mono font-bold">
-                      ZORUNLU (.DWG)
+                      ZORUNLU (.DWG / .ZIP)
                     </span>
                   </div>
                   
@@ -1376,20 +1389,39 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                       </button>
                     </div>
                   ) : (
-                    <label className="border-2 border-dashed border-orange-500/60 hover:border-orange-400 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all bg-obsidian-900/60 group">
+                    <label className="border-2 border-dashed border-orange-500/60 hover:border-orange-400 rounded-xl p-5 sm:p-6 flex flex-col items-center justify-center cursor-pointer transition-all bg-obsidian-900/60 group">
                       <UploadCloud className="w-9 h-9 text-orange-400 mb-2 group-hover:scale-110 transition-transform" />
-                      <span className="text-xs font-bold text-white">
+                      <span className="text-xs font-bold text-white text-center">
                         AutoCAD .DWG Dosyası Yükleyin
                       </span>
-                      <span className="text-[10px] text-orange-300/80 mt-1 font-mono">.DWG veya .DXF (Max 50MB) - Zorunlu</span>
+                      <span className="text-[10px] text-orange-300/80 mt-1 font-mono text-center">
+                        .DWG, .DXF, .ZIP veya .PDF (Maks. 50MB)
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-1 sm:hidden text-center bg-obsidian-950/80 px-2 py-0.5 rounded border border-orange-950">
+                        📱 Telefondan: "Dosyalar" veya "İndirilenler"den seçin
+                      </span>
                       <input
                         type="file"
-                        accept=".dwg,.dxf,application/acad,application/x-acad,application/autocad_dwg,image/vnd.dwg,image/x-dwg"
+                        accept="*/*,.dwg,.dxf,.zip,.rar,.pdf,application/*"
                         className="hidden"
                         onChange={(e) => e.target.files?.[0] && handleFileUpload('sketchPlan', e.target.files[0])}
                       />
                     </label>
                   )}
+
+                  {/* Mobile WhatsApp notice */}
+                  <div className="text-[11px] text-slate-400 leading-tight pt-1 flex items-center justify-between gap-2">
+                    <span>💡 Cep telefonundan da yükleyebilirsiniz.</span>
+                    <a
+                      href="https://wa.me/905444772044?text=Merhaba,%20projemin%20AutoCAD%20DWG%20dosyas%C4%B1n%C4%B1%20WhatsApp%27tan%20iletiyorum."
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-400 hover:underline font-semibold flex items-center gap-1 shrink-0"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" />
+                      <span>WhatsApp'tan Gönder</span>
+                    </a>
+                  </div>
                 </div>
 
                 {/* Diğer Kroki / Belge (İsteğe Bağlı) */}
