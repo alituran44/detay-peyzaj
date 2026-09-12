@@ -478,6 +478,8 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
       }
 
       setIsInitiating3D(true);
+      const generatedOrderId = orderNumber || `DP-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      setOrderNumber(generatedOrderId);
 
       // Call Paynkolay / Aktif Bank Sanal POS API to initiate transaction
       try {
@@ -485,7 +487,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            orderId: orderNumber || `DP-${Date.now()}`,
+            orderId: generatedOrderId,
             amount: pricing.finalPrice,
             cardInfo: {
               cardNumber: cleanCard,
@@ -504,13 +506,40 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
         if (pnkData && pnkData.transactionId) {
           setPaynkolayTxnId(pnkData.transactionId);
         }
+
+        // If Paynkolay returns form fields for direct 3D Secure gateway POST
+        if (pnkData && pnkData.formFields && pnkData.gatewayUrl) {
+          // Pre-save order to cloud before bank redirect so files are preserved
+          try {
+            await finalizeOrder();
+          } catch (e) {
+            console.warn('Pre-save order notice:', e);
+          }
+
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = pnkData.gatewayUrl;
+          form.style.display = 'none';
+
+          Object.entries(pnkData.formFields).forEach(([key, value]) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = String(value);
+            form.appendChild(input);
+          });
+
+          document.body.appendChild(form);
+          form.submit();
+          return;
+        }
       } catch (err) {
         console.warn('Paynkolay gateway initialization notice:', err);
       } finally {
         setIsInitiating3D(false);
       }
 
-      // Generate random 6 digit bank 3D code & open bank 3D Secure modal
+      // Fallback: Open 3D Secure modal if direct post wasn't executed
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setBank3DSmsCode(code);
       setBank3DInput('');

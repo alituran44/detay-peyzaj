@@ -32,7 +32,8 @@ export default async function handler(req, res) {
       service: 'Paynkolay Sanal POS Gateway (Aktif Bank)',
       status: 'active',
       merchantId: DEFAULT_CONFIG.merchantId,
-      gatewayUrl: 'https://vpos.nkolayislem.com.tr/',
+      gatewayUrl: 'https://vpos.nkolayislem.com.tr/Home/PaymentGateway',
+      callbackUrl: 'https://detaypeyzaj.com.tr/api/paynkolay-callback',
       liveReady: true,
       timestamp: new Date().toISOString(),
     });
@@ -74,29 +75,41 @@ export default async function handler(req, res) {
     const cleanCard = (cardInfo?.cardNumber || '').replace(/\s+/g, '');
     const cleanExpiry = (cardInfo?.expiry || '').replace(/\s+/g, '');
     const cleanCvc = (cardInfo?.cvc || '').trim();
-    const cardHolder = (cardInfo?.cardHolder || '').trim();
+    const cardHolder = (cardInfo?.cardHolder || '').trim().toUpperCase();
+
+    let cleanMonth = '12';
+    let cleanYear = '28';
+    if (cleanExpiry.includes('/')) {
+      const parts = cleanExpiry.split('/');
+      cleanMonth = parts[0].padStart(2, '0');
+      cleanYear = parts[1].length === 4 ? parts[1].slice(-2) : parts[1].padStart(2, '0');
+    }
 
     // Format Amount to 2 decimals e.g. 12000.00
     const formattedAmount = Number(amount).toFixed(2);
     const transactionTime = new Date().toISOString();
-
-    // Generate unique transaction reference
+    const finalOrderId = orderId || `DP-${Date.now()}`;
     const txnReference = `PNK-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    const callbackUrl = 'https://detaypeyzaj.com.tr/api/paynkolay-callback';
+
     // Hash signature generation (HMAC SHA-256 with merchantSecretKey)
-    const hashData = `${config.merchantId}|${orderId}|${formattedAmount}|949|${config.tokenSx}`;
+    const hashData = `${config.merchantId}|${finalOrderId}|${formattedAmount}|949|${callbackUrl}|${callbackUrl}|Sale|1|${config.tokenSx}`;
     const signature = crypto
       .createHmac('sha256', config.merchantSecretKey)
       .update(hashData)
       .digest('hex');
 
+    // Alternative SHA256 base64 hash for Aktif Bank VPOS compatibility
+    const plainHashData = `${config.merchantId}${finalOrderId}${formattedAmount}949${callbackUrl}${callbackUrl}Sale1${config.tokenSx}${config.merchantSecretKey}`;
+    const plainSignature = crypto.createHash('sha256').update(plainHashData).digest('base64');
+
     // 1. If this is 3D SMS Confirmation step:
     if (is3DConfirm) {
-      // In live Paynkolay / Bank 3D flow, bank verifies OTP
       return res.status(200).json({
         success: true,
         isPaid: true,
-        orderId,
+        orderId: finalOrderId,
         amount: formattedAmount,
         currency: 'TRY',
         paymentMethod: 'credit_card',
@@ -117,30 +130,37 @@ export default async function handler(req, res) {
 
     // 2. Direct Payment / 3D Initiation step
     let paynkolayApiRes = null;
+    let bankRedirectHtml = null;
+
+    const vposPayload = {
+      MerchantId: config.merchantId,
+      Token: config.tokenSx,
+      OrderId: finalOrderId,
+      Amount: formattedAmount,
+      Currency: '949', // TRY
+      CardNumber: cleanCard,
+      CardExpireMonth: cleanMonth,
+      CardExpireYear: cleanYear,
+      CardCvv: cleanCvc,
+      CardHolderName: cardHolder,
+      CustomerEmail: customerInfo?.email || 'musteri@detaypeyzaj.com.tr',
+      CustomerPhone: customerInfo?.phone || '',
+      CustomerName: customerInfo?.name || cardHolder,
+      Hash: signature,
+      PlainHash: plainSignature,
+      OkUrl: callbackUrl,
+      FailUrl: callbackUrl,
+      TransactionType: 'Sale',
+      Installment: '1',
+      Description: 'Detay Peyzaj Online Mimari Proje Hizmeti',
+    };
+
+    // Try posting to Paynkolay Live API endpoint
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 4500);
 
-      const vposPayload = {
-        MerchantId: config.merchantId,
-        Token: config.tokenSx,
-        OrderId: orderId || `DP-${Date.now()}`,
-        Amount: formattedAmount,
-        Currency: '949', // TRY
-        CardNumber: cleanCard,
-        CardExpireMonth: cleanExpiry.split('/')[0] || '12',
-        CardExpireYear: cleanExpiry.split('/')[1] || '28',
-        CardCvv: cleanCvc,
-        CardHolderName: cardHolder,
-        CustomerEmail: customerInfo?.email || 'musteri@detaypeyzaj.com.tr',
-        CustomerPhone: customerInfo?.phone || '',
-        CustomerName: customerInfo?.name || cardHolder,
-        Hash: signature,
-        OkUrl: 'https://detaypeyzaj.com.tr/api/paynkolay-callback',
-        FailUrl: 'https://detaypeyzaj.com.tr/api/paynkolay-callback',
-      };
-
-      const response = await fetch('https://vpos.nkolayislem.com.tr/Api/Payment/DirectPay', {
+      const response = await fetch('https://vpos.nkolayislem.com.tr/Api/Payment/3DPay', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,17 +173,45 @@ export default async function handler(req, res) {
       clearTimeout(timeoutId);
 
       if (response && response.ok) {
-        paynkolayApiRes = await response.json().catch(() => null);
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          paynkolayApiRes = await response.json().catch(() => null);
+        } else {
+          bankRedirectHtml = await response.text().catch(() => null);
+        }
       }
     } catch (e) {
       console.warn('Paynkolay direct dispatch notice:', e.message);
     }
 
-    // Return 3D Secure prompt with live transaction signature
+    // Paynkolay 3D Gateway submission fields
+    const gatewayUrl = 'https://vpos.nkolayislem.com.tr/Home/PaymentGateway';
+    const formFields = {
+      MerchantId: config.merchantId,
+      Token: config.tokenSx,
+      OrderId: finalOrderId,
+      Amount: formattedAmount,
+      Currency: '949',
+      CardHolderName: cardHolder,
+      CardNumber: cleanCard,
+      CardExpireMonth: cleanMonth,
+      CardExpireYear: cleanYear,
+      CardCvv: cleanCvc,
+      OkUrl: callbackUrl,
+      FailUrl: callbackUrl,
+      Hash: signature,
+      Installment: '1',
+      TransactionType: 'Sale',
+      Description: 'Detay Peyzaj Online Proje',
+      CustomerEmail: customerInfo?.email || 'peyzajdetay@gmail.com',
+      CustomerPhone: customerInfo?.phone || '',
+    };
+
+    // Return 3D Secure prompt with live transaction signature and gateway parameters
     return res.status(200).json({
       success: true,
       requires3D: true,
-      orderId: orderId || `DP-${Date.now()}`,
+      orderId: finalOrderId,
       amount: formattedAmount,
       currency: 'TRY',
       maskedCard: `**** **** **** ${cleanCard.slice(-4) || '0000'}`,
@@ -172,6 +220,9 @@ export default async function handler(req, res) {
       signature,
       merchantId: config.merchantId,
       bank: 'Paynkolay / Aktif Bank 256-Bit SSL',
+      gatewayUrl,
+      formFields,
+      bankRedirectHtml: bankRedirectHtml || null,
       paynkolayResponse: paynkolayApiRes || { status: 'READY_FOR_3D_SECURE', code: '00' },
     });
   } catch (error) {
