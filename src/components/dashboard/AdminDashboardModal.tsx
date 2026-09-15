@@ -185,6 +185,35 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
   const completedProjectsCount = orders.filter((o) => o.status === '5_teslim_edildi').length;
   const totalAreaM2 = orders.reduce((acc, curr) => acc + curr.areaM2, 0);
 
+  const handleUploadDeliverableFile = (file: File) => {
+    if (!file || !activeOrder) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      const lower = file.name.toLowerCase();
+      let type: 'dwg' | 'pdf' | 'excel' | 'image' | 'zip' = 'dwg';
+      if (lower.endsWith('.pdf')) type = 'pdf';
+      else if (lower.endsWith('.xlsx') || lower.endsWith('.xls') || lower.endsWith('.csv')) type = 'excel';
+      else if (lower.endsWith('.zip') || lower.endsWith('.rar')) type = 'zip';
+      else if (lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.webp')) type = 'image';
+
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      const sizeStr = file.size > 1024 * 1024 ? `${sizeMB} MB` : `${(file.size / 1024).toFixed(0)} KB`;
+
+      addDeliverableToOrder(activeOrder.id, {
+        name: file.name,
+        size: sizeStr,
+        type,
+        content,
+      });
+
+      const clientName = activeOrder.invoice.type === 'bireysel' ? activeOrder.invoice.fullName : activeOrder.invoice.companyName;
+      alert(`"${file.name}" proje çizim dosyası buluta başarıyla kaydedildi!\n\nSipariş ID: ${activeOrder.id}\nProje Sahibi: ${clientName}\n\nMüşteri portalında (${activeOrder.userEmail}) anında indirmeye açıldı.`);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAddFile = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFileName.trim() || !activeOrder) return;
@@ -195,8 +224,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       type: newFileType,
     });
 
+    const clientName = activeOrder.invoice.type === 'bireysel' ? activeOrder.invoice.fullName : activeOrder.invoice.companyName;
     setNewFileName('');
-    alert(`"${newFileName}" dosyası başarıyla yüklendi! Müşterinin (${activeOrder.invoice.fullName || activeOrder.invoice.companyName}) portalında anında indirmeye açıldı.`);
+    alert(`"${newFileName}" dosyası başarıyla kaydedildi!\n\nSipariş ID: ${activeOrder.id}\nSahibi: ${clientName}`);
   };
 
   const handleUploadInvoiceFile = (orderId: string, file: File) => {
@@ -902,14 +932,36 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                         </span>
                       </div>
 
-                      {/* Upload Form */}
+                      {/* Drag & Drop / Direct File Upload */}
+                      <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-orange-500/50 hover:border-orange-400 rounded-2xl bg-obsidian-900/60 hover:bg-obsidian-900 cursor-pointer transition-all group">
+                        <Upload className="w-6 h-6 text-orange-400 group-hover:scale-110 transition-transform mb-1.5" />
+                        <span className="text-xs font-bold text-white group-hover:text-orange-300">
+                          Bilgisayarınızdan AutoCAD (.DWG), PDF, 3D Render veya ZIP Dosyası Seçin
+                        </span>
+                        <span className="text-[11px] text-slate-400 mt-1">
+                          Dosya otomatik olarak <strong>{activeOrder.id}</strong> nolu siparişe ve müşteriye ({activeOrder.invoice.fullName || activeOrder.invoice.companyName}) atanarak buluta kaydedilir.
+                        </span>
+                        <input
+                          type="file"
+                          accept="*/*,.dwg,.dxf,.pdf,.zip,.rar,.xlsx,.xls,.png,.jpg,.jpeg"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleUploadDeliverableFile(e.target.files[0]);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {/* Manual Name Entry Option */}
                       <form onSubmit={handleAddFile} className="space-y-3 bg-obsidian-900 p-4 rounded-2xl border border-orange-950">
+                        <div className="text-[11px] font-bold text-slate-400">Veya İsim Belirterek Dosya Ekle:</div>
                         <div className="grid grid-cols-3 gap-2">
                           <input
                             type="text"
                             value={newFileName}
                             onChange={(e) => setNewFileName(e.target.value)}
-                            placeholder="Örn: DP-8492-Yapisal-Pafta-Seti.dwg"
+                            placeholder={`Örn: ${activeOrder.id}-Mimari-Vaziyet-Plani.dwg`}
                             className="col-span-2 bg-obsidian-950 border border-orange-950 rounded-xl p-3 text-xs text-white focus:border-orange-500 outline-none"
                           />
 
@@ -927,10 +979,10 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
 
                         <button
                           type="submit"
-                          className="w-full py-3 rounded-xl font-bold text-xs text-white bg-orange-600 hover:bg-orange-500 shadow-glow flex items-center justify-center gap-2 cursor-pointer"
+                          className="w-full py-2.5 rounded-xl font-bold text-xs text-white bg-orange-950 hover:bg-orange-900 border border-orange-700/60 flex items-center justify-center gap-2 cursor-pointer"
                         >
-                          <Plus className="w-4 h-4" />
-                          <span>Müşterinin Portalı İçin Dosyayı Sisteme Yükle</span>
+                          <Plus className="w-4 h-4 text-orange-400" />
+                          <span>İsimle Listeye Ekle</span>
                         </button>
                       </form>
 
@@ -941,12 +993,24 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                             key={idx}
                             className="p-3 rounded-xl bg-obsidian-900 border border-orange-950 flex items-center justify-between text-xs"
                           >
-                            <div className="flex items-center gap-2">
-                              <FileCheck className="w-4 h-4 text-emerald-400" />
-                              <span className="font-bold text-white">{deliv.name}</span>
-                              <span className="text-slate-500 text-[10px]">({deliv.size})</span>
+                            <div className="flex items-center gap-2 min-w-0">
+                              <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <span className="font-bold text-white truncate">{deliv.name}</span>
+                              <span className="text-slate-500 text-[10px] shrink-0">({deliv.size})</span>
                             </div>
-                            <span className="text-emerald-400 font-semibold text-[10px]">✓ Müşteride Görünüyor</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <a
+                                href={deliv.downloadUrl || `/api/download-file?orderId=${encodeURIComponent(activeOrder.id)}&fileName=${encodeURIComponent(deliv.name)}`}
+                                download={deliv.name}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-orange-600 hover:bg-orange-500 text-white flex items-center gap-1 cursor-pointer"
+                              >
+                                <Download className="w-3 h-3" />
+                                <span>İndir</span>
+                              </a>
+                              <span className="text-emerald-400 font-semibold text-[10px]">✓ Müşteride Açık</span>
+                            </div>
                           </div>
                         ))}
                       </div>

@@ -12,11 +12,15 @@ export type ProjectStatus =
 
 export interface ProjectFile {
   id?: string;
+  orderId?: string;
+  ownerEmail?: string;
+  ownerName?: string;
   name: string;
   size: string;
   type: 'dwg' | 'pdf' | 'excel' | 'image' | 'zip';
   downloadUrl: string;
   uploadedAt: string;
+  content?: string; // base64 binary content for cloud storage
 }
 
 export interface CustomerUploadedDoc {

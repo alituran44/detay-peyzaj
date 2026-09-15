@@ -598,13 +598,16 @@ export const CustomerPortalModal: React.FC<CustomerPortalModalProps> = ({
                             </div>
                           </div>
 
-                          <button
-                            onClick={() => alert(`"${file.name}" başarıyla indiriliyor...`)}
-                            className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-orange-600 hover:bg-orange-500 flex items-center gap-1.5 cursor-pointer shadow-sm"
+                          <a
+                            href={file.downloadUrl || `/api/download-file?orderId=${encodeURIComponent(activeOrder.id)}&fileName=${encodeURIComponent(file.name)}`}
+                            download={file.name}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3.5 py-1.5 rounded-lg text-xs font-bold text-white bg-orange-600 hover:bg-orange-500 flex items-center gap-1.5 cursor-pointer shadow-sm transition-all"
                           >
                             <Download className="w-3.5 h-3.5" />
                             <span>İndir</span>
-                          </button>
+                          </a>
                         </div>
                       ))}
                     </div>

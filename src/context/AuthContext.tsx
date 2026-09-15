@@ -539,11 +539,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setOrders((prev: StoredOrder[]) => {
       const next = prev.map((o: StoredOrder) => {
         if (o.id === orderId) {
+          const ownerName = o.invoice.type === 'bireysel' ? o.invoice.fullName : o.invoice.companyName;
           const newDeliverables = [
             ...(o.deliverables || []),
             {
               ...file,
-              id: `deliv-${Date.now()}`,
+              id: file.id || `deliv-${Date.now()}`,
+              orderId,
+              ownerEmail: o.userEmail || o.invoice.email,
+              ownerName,
               downloadUrl: `/api/download-file?orderId=${encodeURIComponent(orderId)}&fileName=${encodeURIComponent(file.name)}`,
               uploadedAt: new Date().toISOString(),
             },
