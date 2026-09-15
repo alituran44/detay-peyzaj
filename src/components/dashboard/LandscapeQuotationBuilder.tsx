@@ -500,9 +500,110 @@ export const LandscapeQuotationBuilder: React.FC = () => {
 
   const handlePrint = () => {
     setViewMode('preview');
+
     setTimeout(() => {
-      window.print();
-    }, 200);
+      const printElement = printRef.current;
+      if (!printElement) {
+        window.print();
+        return;
+      }
+
+      // Create isolated invisible iframe for 100% clean A4 PDF printing
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow?.document;
+      if (!doc) {
+        window.print();
+        return;
+      }
+
+      // Grab existing stylesheets and tailwind rules
+      const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+        .map((el) => el.outerHTML)
+        .join('\n');
+
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html lang="tr">
+        <head>
+          <meta charset="UTF-8">
+          <title>${activeQuotation.teklifNo} - ${activeQuotation.musteriFirma || 'Peyzaj Teklifi'}</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+          <script src="https://cdn.tailwindcss.com"></script>
+          ${styles}
+          <style>
+            @page {
+              size: A4 portrait;
+              margin: 6mm 8mm;
+            }
+            * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+              box-sizing: border-box;
+            }
+            body {
+              background: #ffffff !important;
+              color: #000000 !important;
+              margin: 0 !important;
+              padding: 0 !important;
+              font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            }
+            .printable-quotation {
+              width: 100% !important;
+              max-width: 100% !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              border: none !important;
+              box-shadow: none !important;
+            }
+            table {
+              border-collapse: collapse !important;
+              width: 100% !important;
+            }
+            th {
+              background-color: #064e3b !important;
+              color: #ffffff !important;
+            }
+            td, th {
+              border-color: #94a3b8 !important;
+            }
+          </style>
+        </head>
+        <body class="bg-white text-black p-0 m-0">
+          <div class="printable-quotation">
+            ${printElement.innerHTML}
+          </div>
+        </body>
+        </html>
+      `);
+      doc.close();
+
+      setTimeout(() => {
+        try {
+          iframe.contentWindow?.focus();
+          iframe.contentWindow?.print();
+        } catch (err) {
+          console.warn('Iframe print error fallback:', err);
+          window.print();
+        } finally {
+          setTimeout(() => {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+            }
+          }, 1500);
+        }
+      }, 350);
+    }, 150);
   };
 
   // WhatsApp Message Generator
