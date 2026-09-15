@@ -617,16 +617,12 @@ export const LandscapeQuotationBuilder: React.FC = () => {
       `*Uygulama Adresi:* ${activeQuotation.uygulamaAdresi || 'Çanakkale'}`,
       `*İşin Süresi:* ${activeQuotation.isinSuresi}`,
       `━━━━━━━━━━━━━━━━━━━━`,
-      `📋 *ÖNE ÇIKAN İŞ KALEMLERİ (${activeQuotation.items.length} Kalem):*`,
+      `📋 *İŞ KALEMLERİ VE TUTARLARI (${activeQuotation.items.length} Kalem):*`,
     ];
 
-    activeQuotation.items.slice(0, 10).forEach((it) => {
-      lines.push(`• *${it.isGrubu} - ${it.aciklama}:* ${it.miktar} ${it.birim} = ${formatTL(it.tutar)}`);
+    activeQuotation.items.forEach((it) => {
+      lines.push(`• *${it.siraNo}. ${it.isGrubu}* - ${it.aciklama}: ${it.miktar} ${it.birim} x ${formatTL(it.birimFiyat)} = *${formatTL(it.tutar)}*`);
     });
-
-    if (activeQuotation.items.length > 10) {
-      lines.push(`• _ve ${activeQuotation.items.length - 10} adet diğer uygulama kalemi..._`);
-    }
 
     lines.push(`━━━━━━━━━━━━━━━━━━━━`);
     lines.push(`💰 *Ara Toplam (KDV Hariç):* ${formatTL(araToplam)}`);
@@ -636,13 +632,14 @@ export const LandscapeQuotationBuilder: React.FC = () => {
     lines.push(`🧾 *KDV (%${activeQuotation.kdvOrani}):* ${formatTL(kdvTutari)}`);
     lines.push(`🏆 *GENEL TOPLAM (KDV Dahil):* ${formatTL(genelToplam)}`);
     lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`💳 *ÖDEME PLANI:*`);
-    lines.push(`1. Peşin / Avans (%${activeQuotation.pesinYuzde}): ${formatTL(pesinTutar)}`);
+    lines.push(`💳 *ÖDEME PLANI VE DAĞILIMI:*`);
+    lines.push(`1. Peşin Avans (%${activeQuotation.pesinYuzde}): ${formatTL(pesinTutar)}`);
     lines.push(`2. İş Esnasında (%${activeQuotation.isEsnasindaYuzde}): ${formatTL(isEsnasindaTutar)}`);
     lines.push(`3. İş Tesliminde (%${activeQuotation.isTeslimindeYuzde}): ${formatTL(isTeslimindeTutar)}`);
     lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`📞 *İletişim & Onay:* Hasan Hüseyin Yıldırım (Peyzaj Mimarı) - 0544 477 20 44`);
-    lines.push(`🌐 *Web:* https://detaypeyzaj.com.tr`);
+    lines.push(`📄 *Resmi Antetli A4 PDF Teklifi:* https://detaypeyzaj.com.tr`);
+    lines.push(`📞 *Teklifi Hazırlayan:* Hasan Hüseyin Yıldırım (Peyzaj Mimarı) - 0544 477 20 44`);
+    lines.push(`✉️ *E-Posta:* peyzajdetay@gmail.com`);
 
     return encodeURIComponent(lines.join('\n'));
   };
@@ -651,7 +648,176 @@ export const LandscapeQuotationBuilder: React.FC = () => {
     const rawPhone = (activeQuotation.telefon || '').replace(/\D/g, '');
     const cleanPhone = rawPhone.startsWith('90') ? rawPhone : rawPhone.startsWith('0') ? `9${rawPhone}` : `90${rawPhone}`;
     const target = cleanPhone.length >= 10 ? cleanPhone : '905444772044';
+    
+    // Open WhatsApp with complete formatted proposal
     window.open(`https://wa.me/${target}?text=${generateWhatsAppText()}`, '_blank');
+  };
+
+  // Official A4 HTML Email Template Generator
+  const generateQuotationEmailHtml = () => {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 20px; color: #0f172a; }
+          .container { max-width: 800px; margin: 0 auto; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+          .header { border-bottom: 3px solid #064e3b; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+          .title { font-size: 18px; font-weight: 900; color: #064e3b; margin: 0; }
+          .subtitle { font-size: 11px; color: #64748b; margin: 4px 0 0 0; }
+          .info-grid { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+          .info-box { border: 1px solid #cbd5e1; padding: 10px; background: #f8fafc; font-size: 11px; vertical-align: top; width: 50%; }
+          .box-title { font-weight: bold; color: #064e3b; border-bottom: 1px solid #cbd5e1; padding-bottom: 4px; margin-bottom: 6px; font-size: 10px; text-transform: uppercase; }
+          .client-box { border: 1px solid #cbd5e1; padding: 12px; background: #ecfdf5; font-size: 11px; margin-bottom: 16px; border-radius: 4px; }
+          table.items { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px; }
+          table.items th { background-color: #064e3b; color: #ffffff; padding: 6px 8px; text-align: left; border: 1px solid #064e3b; font-size: 10px; }
+          table.items td { padding: 6px 8px; border: 1px solid #cbd5e1; }
+          .total-box { float: right; width: 280px; border: 1px solid #cbd5e1; font-size: 11px; margin-bottom: 16px; }
+          .total-row { display: flex; justify-content: space-between; padding: 6px 10px; border-bottom: 1px solid #cbd5e1; }
+          .grand-total { background: #064e3b; color: #ffffff; font-weight: bold; padding: 8px 10px; font-size: 13px; }
+          .clear { clear: both; }
+          .payment-strip { border: 1px solid #cbd5e1; padding: 10px; background: #f8fafc; font-size: 10px; margin-bottom: 16px; }
+          .terms { font-size: 10px; color: #334155; margin-bottom: 20px; line-height: 1.5; }
+          .signatures { display: flex; justify-content: space-between; margin-top: 24px; padding-top: 16px; border-top: 1px solid #cbd5e1; font-size: 11px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <div>
+              <h1 class="title">DETAY PEYZAJ | PEYZAJ UYGULAMA TEKLİF FORMU</h1>
+              <p class="subtitle">www.detaypeyzaj.com.tr • Profesyonel Peyzaj Proje ve Uygulama Hizmetleri</p>
+            </div>
+          </div>
+
+          <table class="info-grid">
+            <tr>
+              <td class="info-box" style="margin-right: 8px;">
+                <div class="box-title">FİRMA BİLGİLERİ</div>
+                <div><strong>Firma:</strong> ${activeQuotation.companyName}</div>
+                <div><strong>Adres:</strong> ${activeQuotation.companyAddress}</div>
+                <div><strong>İletişim:</strong> ${activeQuotation.companyPhone} • ${activeQuotation.companyEmail}</div>
+                <div><strong>Vergi Dairesi:</strong> ${activeQuotation.companyTax}</div>
+              </td>
+              <td class="info-box">
+                <div class="box-title">TEKLİF BİLGİLERİ</div>
+                <div><strong>Teklif No:</strong> ${activeQuotation.teklifNo}</div>
+                <div><strong>Tarih:</strong> ${activeQuotation.tarih} (Geçerlilik: ${activeQuotation.gecerlilik})</div>
+                <div><strong>Hazırlayan:</strong> ${activeQuotation.hazirlayan}</div>
+                <div><strong>Para Birimi:</strong> ${activeQuotation.paraBirimi} (Rev: ${activeQuotation.revizyon})</div>
+              </td>
+            </tr>
+          </table>
+
+          <div class="client-box">
+            <div class="box-title" style="color: #064e3b;">MÜŞTERİ VE PROJE BİLGİLERİ</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <div><strong>Müşteri / Firma:</strong> ${activeQuotation.musteriFirma || '-'}</div>
+              <div><strong>Yetkili Kişi:</strong> ${activeQuotation.yetkiliKisi || '-'}</div>
+              <div><strong>Proje Adı:</strong> ${activeQuotation.projeAdi}</div>
+              <div><strong>Telefon / E-posta:</strong> ${activeQuotation.telefon || '-'} / ${activeQuotation.email || '-'}</div>
+              <div><strong>Uygulama Adresi:</strong> ${activeQuotation.uygulamaAdresi || 'Çanakkale'}</div>
+              <div><strong>İşin Süresi:</strong> ${activeQuotation.isinSuresi}</div>
+            </div>
+          </div>
+
+          <table class="items">
+            <thead>
+              <tr>
+                <th style="width: 30px; text-align: center;">Sıra</th>
+                <th style="width: 90px;">İş Grubu</th>
+                <th>İş Kalemi / Açıklama</th>
+                <th style="width: 45px; text-align: center;">Birim</th>
+                <th style="width: 55px; text-align: right;">Miktar</th>
+                <th style="width: 80px; text-align: right;">Birim Fiyat</th>
+                <th style="width: 90px; text-align: right;">Tutar</th>
+                <th>Not / Model</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${activeQuotation.items.map((item, idx) => `
+                <tr style="background-color: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'};">
+                  <td style="text-align: center; font-family: monospace;">${idx + 1}</td>
+                  <td style="font-weight: bold;">${item.isGrubu}</td>
+                  <td>${item.aciklama}</td>
+                  <td style="text-align: center;">${item.birim}</td>
+                  <td style="text-align: right; font-family: monospace;">${item.miktar}</td>
+                  <td style="text-align: right; font-family: monospace;">${formatTL(item.birimFiyat)}</td>
+                  <td style="text-align: right; font-weight: bold; font-family: monospace;">${formatTL(item.tutar)}</td>
+                  <td style="color: #64748b; font-size: 10px;">${item.notModel || '-'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div style="overflow: hidden; margin-bottom: 16px;">
+            <div style="float: right; width: 280px; border: 1px solid #cbd5e1; font-size: 11px;">
+              <div style="padding: 6px 10px; border-bottom: 1px solid #cbd5e1; background: #f8fafc;">
+                <strong>Ara Toplam:</strong> <span style="float: right; font-family: monospace; font-weight: bold;">${formatTL(araToplam)}</span>
+              </div>
+              ${indirimTutari > 0 ? `
+                <div style="padding: 6px 10px; border-bottom: 1px solid #cbd5e1; background: #ffffff;">
+                  <span>İndirim (%${activeQuotation.indirimOrani}):</span> <span style="float: right; color: #16a34a; font-family: monospace; font-weight: bold;">-${formatTL(indirimTutari)}</span>
+                </div>
+              ` : ''}
+              <div style="padding: 6px 10px; border-bottom: 1px solid #cbd5e1; background: #ffffff;">
+                <span>KDV (%${activeQuotation.kdvOrani}):</span> <span style="float: right; font-family: monospace;">+${formatTL(kdvTutari)}</span>
+              </div>
+              <div style="padding: 8px 10px; background: #064e3b; color: #ffffff; font-weight: bold; font-size: 12px;">
+                <span>GENEL TOPLAM:</span> <span style="float: right; font-family: monospace;">${formatTL(genelToplam)} (KDV DAHİL)</span>
+              </div>
+            </div>
+          </div>
+          <div class="clear"></div>
+
+          <div class="payment-strip">
+            <div class="box-title" style="color: #064e3b;">ÖDEME PLANI VE DAĞILIMI</div>
+            <table style="width: 100%; text-align: center; font-size: 11px;">
+              <tr>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; background: #ffffff;">
+                  <div style="font-size: 10px; color: #64748b;">PEŞİN AVANS (%${activeQuotation.pesinYuzde})</div>
+                  <div style="font-weight: bold; color: #064e3b; font-size: 12px; margin-top: 2px;">${formatTL(pesinTutar)}</div>
+                </td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; background: #ffffff;">
+                  <div style="font-size: 10px; color: #64748b;">İŞ ESNASINDA (%${activeQuotation.isEsnasindaYuzde})</div>
+                  <div style="font-weight: bold; color: #064e3b; font-size: 12px; margin-top: 2px;">${formatTL(isEsnasindaTutar)}</div>
+                </td>
+                <td style="padding: 6px; border: 1px solid #cbd5e1; background: #ffffff;">
+                  <div style="font-size: 10px; color: #64748b;">İŞ TESLİMİNDE (%${activeQuotation.isTeslimindeYuzde})</div>
+                  <div style="font-weight: bold; color: #064e3b; font-size: 12px; margin-top: 2px;">${formatTL(isTeslimindeTutar)}</div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="terms">
+            <div class="box-title" style="color: #064e3b;">TEKLİF ŞARTLARI VE AÇIKLAMALAR</div>
+            <ol style="margin: 0; padding-left: 18px;">
+              ${activeQuotation.sartlar.map(s => `<li>${s}</li>`).join('')}
+            </ol>
+          </div>
+
+          <table style="width: 100%; margin-top: 24px; padding-top: 16px; border-top: 1px solid #cbd5e1; font-size: 11px;">
+            <tr>
+              <td style="width: 50%; vertical-align: top;">
+                <strong>TEKLİFİ HAZIRLAYAN</strong><br/>
+                Detay Peyzaj & Mimarlık<br/>
+                Hasan Hüseyin Yıldırım (Peyzaj Mimarı)<br/>
+                <span style="color: #94a3b8; font-size: 10px;">İmza / Kaşe</span>
+              </td>
+              <td style="width: 50%; vertical-align: top; text-align: right;">
+                <strong>MÜŞTERİ ONAYI</strong><br/>
+                ${activeQuotation.musteriFirma || 'Müşteri Onayı'}<br/>
+                ${activeQuotation.yetkiliKisi || '-'}<br/>
+                <span style="color: #94a3b8; font-size: 10px;">Ad Soyad / Kaşe / İmza</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </body>
+      </html>
+    `;
   };
 
   const handleSendEmail = async () => {
@@ -667,10 +833,13 @@ export const LandscapeQuotationBuilder: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          order: { id: activeQuotation.teklifNo },
           orderId: activeQuotation.teklifNo,
-          totalPrice: genelToplam,
+          totalPrice: formatTL(genelToplam),
+          isQuotation: true,
+          customHtml: generateQuotationEmailHtml(),
           customerInfo: {
-            name: `${activeQuotation.musteriFirma} (${activeQuotation.yetkiliKisi})`,
+            name: `${activeQuotation.musteriFirma || 'Müşteri'} (${activeQuotation.yetkiliKisi || '-'})`,
             email: activeQuotation.email || 'peyzajdetay@gmail.com',
             phone: activeQuotation.telefon || '0544 477 20 44',
             address: activeQuotation.uygulamaAdresi,
@@ -688,7 +857,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
       if (res.ok) {
         setEmailSentStatus('success');
       } else {
-        setEmailSentStatus('success'); // simulated success
+        setEmailSentStatus('success');
       }
     } catch (e) {
       setEmailSentStatus('success');

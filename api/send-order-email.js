@@ -174,10 +174,18 @@ export default async function handler(req, res) {
     const cleanAreaM2 = Number(areaM2) > 0 ? Number(areaM2) : 1000;
     const cleanOrderId = sanitizeString(order.id, 50);
 
+    const isQuotation = Boolean(body.customHtml || body.isQuotation);
     const TARGET_EMAILS = ['hhyildirimm@gmail.com', 'peyzajdetay@gmail.com'];
-    const emailSubject = `🌿 [DETAY PEYZAJ SIPARIS] ${cleanOrderId} - ${cleanCustomerName} (${cleanAreaM2} m² - ${totalPrice} TL)`;
+    const recipients = [...TARGET_EMAILS];
+    if (cleanEmail && cleanEmail.includes('@') && !recipients.includes(cleanEmail)) {
+      recipients.push(cleanEmail);
+    }
 
-    const htmlBody = `
+    const emailSubject = isQuotation
+      ? `🌿 [RESMİ PEYZAJ UYGULAMA TEKLİF FORMU] ${cleanOrderId} - ${cleanCustomerName} (${totalPrice})`
+      : `🌿 [DETAY PEYZAJ SIPARIS] ${cleanOrderId} - ${cleanCustomerName} (${cleanAreaM2} m² - ${totalPrice} TL)`;
+
+    const defaultHtmlBody = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 680px; margin: 0 auto; background-color: #0f172a; color: #f8fafc; border-radius: 16px; overflow: hidden; border: 1px solid #ea580c;">
         <div style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); padding: 24px; text-align: center;">
           <h1 style="margin: 0; color: #ffffff; font-size: 24px; letter-spacing: 1px;">DETAY PEYZAJ MIMARLIK</h1>
@@ -352,18 +360,18 @@ export default async function handler(req, res) {
     }
 
     await sendMailHelper({
-      to: TARGET_EMAILS,
+      to: recipients,
       subject: emailSubject,
-      html: htmlBody,
-      text: `Detay Peyzaj Yeni Siparis: ${order.id}`,
+      html: body.customHtml || defaultHtmlBody,
+      text: isQuotation ? `Detay Peyzaj Teklif: ${cleanOrderId} - Toplam: ${totalPrice}` : `Detay Peyzaj Yeni Siparis: ${order.id}`,
       attachments: Array.isArray(attachments) ? attachments : [],
     });
 
     return res.status(200).json({
       success: true,
-      recipients: TARGET_EMAILS,
+      recipients,
       orderId: order.id,
-      message: 'Siparis maili iletildi ve bulut veritabanına kaydedildi.',
+      message: 'Mail başarıyla iletildi.',
     });
   } catch (error) {
     console.error('Order email error:', error);
