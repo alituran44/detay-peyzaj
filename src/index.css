@@ -69,3 +69,38 @@
 .shadow-glow-sm {
   box-shadow: 0 0 20px -3px rgba(249, 115, 22, 0.30);
 }
+
+/* Print Styles for Landscape Quotation & Official A4 Forms */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print,
+  header,
+  nav,
+  footer,
+  aside {
+    display: none !important;
+  }
+
+  .printable-quotation {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 6mm 8mm;
+  }
+}
+

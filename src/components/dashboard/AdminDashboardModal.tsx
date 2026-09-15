@@ -49,6 +49,7 @@ import {
 import type { MailTemplate, MailConfig } from '../../utils/mailService';
 import type { ProjectStatus, StoredOrder } from '../../types/auth';
 import { getDefaultTasksForOrder } from '../../utils/taskUtils';
+import { LandscapeQuotationBuilder } from './LandscapeQuotationBuilder';
 
 interface AdminDashboardModalProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     addTaskToOrder,
     refreshCloudOrders,
   } = useAuth();
-  const [activeTab, setActiveTab] = useState<'customers' | 'tasks' | 'finance' | 'payment_settings' | 'mail_templates'>('customers');
+  const [activeTab, setActiveTab] = useState<'customers' | 'tasks' | 'finance' | 'payment_settings' | 'mail_templates' | 'quotation'>('customers');
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -362,6 +363,17 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
               >
                 <Mail className="w-3.5 h-3.5" />
                 <span>✉️ Mail Şablonları</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('quotation')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                  activeTab === 'quotation'
+                    ? 'bg-orange-600 text-white shadow-glow-sm'
+                    : 'text-orange-400 hover:text-white bg-orange-950/40 hover:bg-orange-900/60 border border-orange-800/40'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>📋 Peyzaj Teklif Formu</span>
               </button>
               <button
                 onClick={() => setActiveTab('payment_settings')}
@@ -2427,6 +2439,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
               })()}
 
             </div>
+          ) : activeTab === 'quotation' ? (
+            <LandscapeQuotationBuilder />
           ) : null}
 
       </main>
