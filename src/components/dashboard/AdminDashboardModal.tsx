@@ -437,7 +437,24 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
               <div className="lg:col-span-5 bg-obsidian-950 p-6 rounded-3xl border border-orange-950 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-white">Müşteri Listesi ({filteredOrders.length})</h3>
-                  <span className="text-[10px] text-orange-400 font-mono">Canlı Siparişler</span>
+                  <div className="flex items-center gap-2">
+                    {orders.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (confirm('Tüm test siparişlerini ve yüklenen test dosyalarını silmek istediğinize emin misiniz?')) {
+                            clearAllOrders();
+                            setSelectedOrderId(null);
+                          }
+                        }}
+                        className="text-[10px] text-red-400 hover:text-red-300 font-bold px-2 py-0.5 rounded bg-red-950/50 border border-red-800/40 cursor-pointer"
+                        title="Tüm test verilerini temizle"
+                      >
+                        Tümünü Temizle
+                      </button>
+                    )}
+                    <span className="text-[10px] text-orange-400 font-mono">Canlı Siparişler</span>
+                  </div>
                 </div>
 
                 {/* Search Bar */}

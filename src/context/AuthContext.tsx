@@ -784,6 +784,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('detay_orders_v3');
     localStorage.removeItem('detay_orders_v2');
     localStorage.removeItem('detay_orders');
+    localStorage.removeItem('detay_registered_users');
+    localStorage.removeItem('detay_saved_customer_profile');
     syncDeleteOrderFromCloud('', true);
   };
 
