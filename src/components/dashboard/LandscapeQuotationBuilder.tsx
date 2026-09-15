@@ -14,7 +14,9 @@ import {
   ArrowRight,
   Eye,
   Clock,
-  Check
+  Check,
+  Paperclip,
+  X
 } from 'lucide-react';
 import { formatTL } from '../../utils/pricing';
 
@@ -366,6 +368,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
   const [emailSentStatus, setEmailSentStatus] = useState<string | null>(null);
+  const [showFileAttachModal, setShowFileAttachModal] = useState(false);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -667,6 +670,26 @@ export const LandscapeQuotationBuilder: React.FC = () => {
     
     // Open WhatsApp with complete formatted proposal and live PDF link
     window.open(`https://wa.me/${target}?text=${generateWhatsAppText()}`, '_blank');
+  };
+
+  // 2-in-1 Action: Download A4 PDF and Open WhatsApp Chat for easy file attachment
+  const handleDownloadAndOpenWhatsApp = () => {
+    // 1. Trigger isolated A4 PDF print/save
+    handlePrint();
+
+    // 2. Open WhatsApp chat with customer
+    setTimeout(() => {
+      const rawPhone = (activeQuotation.telefon || '').replace(/\D/g, '');
+      const cleanPhone = rawPhone.startsWith('90') ? rawPhone : rawPhone.startsWith('0') ? `9${rawPhone}` : `90${rawPhone}`;
+      const target = cleanPhone.length >= 10 ? cleanPhone : '905444772044';
+      
+      const briefText = encodeURIComponent(
+        `🌿 *DETAY PEYZAJ & MİMARLIK — PEYZAJ UYGULAMA TEKLİFİ*\n*Teklif No:* ${activeQuotation.teklifNo}\n*Müşteri / Firma:* ${activeQuotation.musteriFirma || 'Sayın Yetkili'}\n*Proje Adı:* ${activeQuotation.projeAdi}\n*Genel Toplam:* ${formatTL(genelToplam)} (KDV Dahil)\n\n📎 Resmi antetli A4 teklif PDF dosyamız ekte bilginize sunulmuştur.`
+      );
+      
+      window.open(`https://wa.me/${target}?text=${briefText}`, '_blank');
+      setShowFileAttachModal(true);
+    }, 600);
   };
 
   // Official A4 HTML Email Template Generator
@@ -981,27 +1004,9 @@ export const LandscapeQuotationBuilder: React.FC = () => {
       </div>
 
       {/* 🚀 QUICK EXPORT & SHARE TOOLBAR (Hidden in Print) */}
-      <div className="no-print grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         
-        {/* PDF / Yazdır Butonu */}
-        <button
-          type="button"
-          onClick={handlePrint}
-          className="p-3.5 rounded-2xl bg-obsidian-950 hover:bg-obsidian-900 border border-orange-500/40 hover:border-orange-400 flex items-center justify-between group cursor-pointer transition-all shadow-md"
-        >
-          <div className="flex items-center gap-3 text-left">
-            <div className="w-9 h-9 rounded-xl bg-orange-600/20 border border-orange-500/30 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
-              <Printer className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-white">PDF İndir / Yazdır</div>
-              <div className="text-[10px] text-slate-400">Resmi antetli A4 formatında kaydet</div>
-            </div>
-          </div>
-          <ArrowRight className="w-4 h-4 text-orange-400 group-hover:translate-x-1 transition-transform" />
-        </button>
-
-        {/* WhatsApp İle Gönder Butonu */}
+        {/* 1. WhatsApp İle Canlı A4 Link Gönder */}
         <button
           type="button"
           onClick={handleSendWhatsApp}
@@ -1012,14 +1017,50 @@ export const LandscapeQuotationBuilder: React.FC = () => {
               <MessageCircle className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-xs font-bold text-white">WhatsApp İle Gönder</div>
+              <div className="text-xs font-bold text-white">1. WhatsApp (Canlı Link)</div>
               <div className="text-[10px] text-emerald-300/80">A4 Teklif Linki & Özet Mesajı</div>
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
         </button>
 
-        {/* E-Posta İle Gönder Butonu */}
+        {/* 2. PDF İndir ve WhatsApp Aç (Dosya Eki Olarak) */}
+        <button
+          type="button"
+          onClick={handleDownloadAndOpenWhatsApp}
+          className="p-3.5 rounded-2xl bg-obsidian-950 hover:bg-teal-950/40 border border-teal-500/40 hover:border-teal-400 flex items-center justify-between group cursor-pointer transition-all shadow-md"
+        >
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-9 h-9 rounded-xl bg-teal-600/20 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:scale-110 transition-transform">
+              <Paperclip className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-white">2. PDF İndir & WhatsApp Aç</div>
+              <div className="text-[10px] text-teal-300/80">PDF'i WhatsApp'a belge ekle</div>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-teal-400 group-hover:translate-x-1 transition-transform" />
+        </button>
+
+        {/* 3. PDF İndir / Yazdır Butonu */}
+        <button
+          type="button"
+          onClick={handlePrint}
+          className="p-3.5 rounded-2xl bg-obsidian-950 hover:bg-obsidian-900 border border-orange-500/40 hover:border-orange-400 flex items-center justify-between group cursor-pointer transition-all shadow-md"
+        >
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-9 h-9 rounded-xl bg-orange-600/20 border border-orange-500/30 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+              <Printer className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-white">3. PDF İndir / Yazdır</div>
+              <div className="text-[10px] text-slate-400">Tek sayfa A4 formatında kaydet</div>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-orange-400 group-hover:translate-x-1 transition-transform" />
+        </button>
+
+        {/* 4. E-Posta İle Gönder Butonu */}
         <button
           type="button"
           disabled={emailSending}
@@ -1032,7 +1073,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
             </div>
             <div>
               <div className="text-xs font-bold text-white">
-                {emailSentStatus === 'success' ? 'E-Posta Gönderildi!' : 'E-Posta İle İlet'}
+                {emailSentStatus === 'success' ? 'E-Posta Gönderildi!' : '4. E-Posta İle İlet'}
               </div>
               <div className="text-[10px] text-amber-300/80">{activeQuotation.email || 'peyzajdetay@gmail.com'}</div>
             </div>
@@ -1047,10 +1088,10 @@ export const LandscapeQuotationBuilder: React.FC = () => {
         <div className="flex items-start gap-2.5">
           <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <span className="font-bold text-white block">WhatsApp PDF Gönderim Seçenekleri:</span>
+            <span className="font-bold text-white block">WhatsApp Teklif İletim Seçenekleri (Her İkisi de Aktif):</span>
             <span className="text-[11px] text-emerald-300/90 block leading-relaxed">
-              <strong>1. Canlı A4 Linki İle:</strong> "WhatsApp İle Gönder" butonuna bastığınızda müşteriye hem özet metin hem de tek tıkla açılan antetli A4 teklif bağlantısı gider.<br/>
-              <strong>2. Doğrudan PDF Dosyası Olarak:</strong> "PDF İndir / Yazdır" butonuna basıp inen tek sayfalık PDF'i WhatsApp penceresine sürükleyip bırakarak doğrudan belge olarak iletebilirsiniz.
+              <strong>🌐 1. Canlı A4 Linki İle:</strong> Müşteriye WhatsApp'tan metin özeti ve tıklandığında doğrudan resmi A4 sayfasını açan canlı link gider.<br/>
+              <strong>📎 2. Doğrudan PDF Dosyası Olarak:</strong> "PDF İndir & WhatsApp Aç" butonuna bastığınızda PDF tek sayfada iner ve WhatsApp sohbeti açılır; inen PDF'i WhatsApp penceresine sürükleyip belge olarak yollayabilirsiniz.
             </span>
           </div>
         </div>
@@ -1884,6 +1925,53 @@ export const LandscapeQuotationBuilder: React.FC = () => {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* 📎 WhatsApp'a PDF Dosyası Ekleme Rehberi Modalı */}
+      {showFileAttachModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in no-print">
+          <div className="bg-obsidian-950 border border-teal-500/50 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-teal-950 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-teal-600/20 border border-teal-500/40 flex items-center justify-center text-teal-400">
+                  <Paperclip className="w-4 h-4" />
+                </div>
+                <h4 className="text-sm font-bold text-white">PDF İndirildi & WhatsApp Açıldı</h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFileAttachModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs text-slate-300">
+              <div className="bg-teal-950/40 border border-teal-500/30 p-3 rounded-xl flex items-start gap-2 text-teal-200">
+                <Check className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                <span>Teklif PDF çıktısı cihazınıza indirildi ve müşterinizin WhatsApp sohbeti açıldı.</span>
+              </div>
+
+              <div className="space-y-2 bg-obsidian-900 p-3.5 rounded-xl border border-orange-950">
+                <span className="font-bold text-white block">📎 WhatsApp'a Dosya Ekleme:</span>
+                <ol className="list-decimal pl-4 space-y-1.5 text-slate-300 text-[11px]">
+                  <li>Açılan WhatsApp sekmesinde sohbet ekranına gidin.</li>
+                  <li>İndirilen <strong>"{activeQuotation.teklifNo}.pdf"</strong> dosyasını doğrudan WhatsApp penceresine <strong>sürükleyip bırakın</strong>.</li>
+                  <li>Veya sol alttaki <strong>ataç (📎) simgesi -&gt; Belge</strong> seçeneğinden PDF'i ekleyin.</li>
+                </ol>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowFileAttachModal(false)}
+              className="w-full py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs shadow-glow-sm cursor-pointer transition-all"
+            >
+              Anladım, Kapat
+            </button>
+          </div>
         </div>
       )}
 
