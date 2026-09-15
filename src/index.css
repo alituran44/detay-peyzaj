@@ -81,13 +81,27 @@
     width: 100% !important;
   }
 
-  .no-print,
+  /* Hide ALL admin navigation, KPI cards, banners, sidebars, and utility buttons */
   header,
   nav,
   footer,
   aside,
-  button {
+  button,
+  .no-print,
+  .no-print *,
+  .kpi-grid,
+  .kpi-grid *,
+  .kpi-card,
+  .kpi-card * {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    overflow: hidden !important;
   }
 
   /* Force printable-quotation to display cleanly */
@@ -95,7 +109,7 @@
     box-shadow: none !important;
     border: 1px solid #cbd5e1 !important;
     margin: 0 auto !important;
-    padding: 8mm !important;
+    padding: 6mm 8mm !important;
     width: 100% !important;
     max-width: 100% !important;
     background: #ffffff !important;

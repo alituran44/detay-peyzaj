@@ -443,8 +443,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
           
           {/* Top 4 KPI Cards (Only on general admin tabs, hidden in print) */}
           {activeTab !== 'quotation' && (
-            <div className="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+            <div className="no-print kpi-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="no-print kpi-card bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span>Gelen Toplam Ciro</span>
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -453,7 +453,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                 <div className="text-[10px] text-emerald-400 font-semibold">%100 Tahsil Edildi (KDV Dahil)</div>
               </div>
 
-              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+              <div className="no-print kpi-card bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span>Çizimdeki Projeler</span>
                   <Clock className="w-4 h-4 text-orange-400" />
@@ -462,7 +462,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                 <div className="text-[10px] text-slate-400">5 Günlük Takvimde</div>
               </div>
 
-              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+              <div className="no-print kpi-card bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span>Teslim Edilen Projeler</span>
                   <FileCheck className="w-4 h-4 text-emerald-400" />
@@ -471,7 +471,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                 <div className="text-[10px] text-slate-400">Müşteriye İletildi</div>
               </div>
 
-              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+              <div className="no-print kpi-card bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span>Toplam Arsa Alanı</span>
                   <Layers className="w-4 h-4 text-orange-400" />
