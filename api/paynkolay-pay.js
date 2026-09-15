@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       service: 'Paynkolay Sanal POS Gateway (Aktif Bank)',
       status: 'active',
       merchantId: DEFAULT_CONFIG.merchantId,
-      gatewayUrl: 'https://vpos.nkolayislem.com.tr/Home/PaymentGateway',
+      gatewayUrl: 'https://paynkolay.nkolayislem.com.tr/Vpos/v1/Payment',
       callbackUrl: 'https://detaypeyzaj.com.tr/api/paynkolay-callback',
       liveReady: true,
       timestamp: new Date().toISOString(),
@@ -135,32 +135,46 @@ export default async function handler(req, res) {
     const vposPayload = {
       MerchantId: config.merchantId,
       Token: config.tokenSx,
+      sx: config.tokenSx,
       OrderId: finalOrderId,
+      clientRefCode: finalOrderId,
       Amount: formattedAmount,
+      amount: formattedAmount,
       Currency: '949', // TRY
+      currency: '949',
+      use3D: 'true',
       CardNumber: cleanCard,
+      cardNumber: cleanCard,
       CardExpireMonth: cleanMonth,
+      cardExpireMonth: cleanMonth,
       CardExpireYear: cleanYear,
+      cardExpireYear: cleanYear,
       CardCvv: cleanCvc,
+      cardCvv: cleanCvc,
       CardHolderName: cardHolder,
+      cardHolder: cardHolder,
       CustomerEmail: customerInfo?.email || 'musteri@detaypeyzaj.com.tr',
       CustomerPhone: customerInfo?.phone || '',
       CustomerName: customerInfo?.name || cardHolder,
       Hash: signature,
+      hash: signature,
       PlainHash: plainSignature,
       OkUrl: callbackUrl,
+      okUrl: callbackUrl,
+      returnUrl: callbackUrl,
       FailUrl: callbackUrl,
+      failUrl: callbackUrl,
       TransactionType: 'Sale',
       Installment: '1',
       Description: 'Detay Peyzaj Online Mimari Proje Hizmeti',
     };
 
-    // Try posting to Paynkolay Live API endpoint
+    // Post to Paynkolay Live Official API endpoint
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4500);
 
-      const response = await fetch('https://vpos.nkolayislem.com.tr/Api/Payment/3DPay', {
+      const response = await fetch('https://paynkolay.nkolayislem.com.tr/Vpos/v1/Payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -184,22 +198,36 @@ export default async function handler(req, res) {
       console.warn('Paynkolay direct dispatch notice:', e.message);
     }
 
-    // Paynkolay 3D Gateway submission fields
-    const gatewayUrl = 'https://vpos.nkolayislem.com.tr/Home/PaymentGateway';
+    // Official Paynkolay 3D Gateway submission URL and fields
+    const gatewayUrl = 'https://paynkolay.nkolayislem.com.tr/Vpos/v1/Payment';
     const formFields = {
       MerchantId: config.merchantId,
       Token: config.tokenSx,
+      sx: config.tokenSx,
       OrderId: finalOrderId,
+      clientRefCode: finalOrderId,
       Amount: formattedAmount,
+      amount: formattedAmount,
       Currency: '949',
+      currency: '949',
+      use3D: 'true',
       CardHolderName: cardHolder,
+      cardHolder: cardHolder,
       CardNumber: cleanCard,
+      cardNumber: cleanCard,
       CardExpireMonth: cleanMonth,
+      cardExpireMonth: cleanMonth,
       CardExpireYear: cleanYear,
+      cardExpireYear: cleanYear,
       CardCvv: cleanCvc,
+      cardCvv: cleanCvc,
       OkUrl: callbackUrl,
+      okUrl: callbackUrl,
+      returnUrl: callbackUrl,
       FailUrl: callbackUrl,
+      failUrl: callbackUrl,
       Hash: signature,
+      hash: signature,
       Installment: '1',
       TransactionType: 'Sale',
       Description: 'Detay Peyzaj Online Proje',

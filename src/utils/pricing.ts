@@ -23,7 +23,10 @@ export function getDiscountRate(areaM2: number): number {
 }
 
 export function calculatePricing(areaM2: number, services: SelectedServices, shippingOption: boolean = false): PricingBreakdown {
-  const donum = areaM2 / 1000;
+  // 1 dönüme (1000 m²) kadar taban alan 1 dönüm olarak ücretlendirilir (1 Dönüme kadar: 12.000 TL).
+  // 1 dönüm üzeri projelerde gerçek dönüm hesabı ve kademeli indirimler uygulanır.
+  const effectiveDonum = Math.max(1, areaM2 / 1000);
+  const actualDonum = areaM2 / 1000;
   
   // 1. Peyzaj Projesi Tutarı ve İndirimi
   let landscapeBase = 0;
@@ -31,20 +34,20 @@ export function calculatePricing(areaM2: number, services: SelectedServices, shi
   const discountRate = getDiscountRate(areaM2);
 
   if (services.landscapeProject) {
-    landscapeBase = donum * SERVICE_RATES.landscapeProject;
+    landscapeBase = effectiveDonum * SERVICE_RATES.landscapeProject;
     landscapeDiscount = (landscapeBase * discountRate) / 100;
   }
 
   // 2. 3D Görsel Tasarım Tutarı (Sabit - İndirimsiz)
   let visual3DBase = 0;
   if (services.visual3D) {
-    visual3DBase = donum * SERVICE_RATES.visual3D;
+    visual3DBase = effectiveDonum * SERVICE_RATES.visual3D;
   }
 
   // 3. Sulama Projesi Tutarı (Sabit - İndirimsiz)
   let irrigationBase = 0;
   if (services.irrigationProject) {
-    irrigationBase = donum * SERVICE_RATES.irrigationProject;
+    irrigationBase = effectiveDonum * SERVICE_RATES.irrigationProject;
   }
 
   const basePrice = Math.round(landscapeBase + visual3DBase + irrigationBase);
@@ -55,7 +58,7 @@ export function calculatePricing(areaM2: number, services: SelectedServices, shi
 
   return {
     areaM2,
-    areaDonum: Number(donum.toFixed(2)),
+    areaDonum: Number(actualDonum.toFixed(2)),
     basePrice,
     discountRate: services.landscapeProject ? discountRate : 0,
     discountAmount,
