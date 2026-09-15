@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, CheckCircle2, CheckSquare, Square, FileCheck, Layers, Droplets } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, CheckSquare, Square, FileCheck, Layers, Droplets, Edit3 } from 'lucide-react';
 import { calculatePricing, formatTL, DEFAULT_SERVICES } from '../utils/pricing';
 import type { SelectedServices } from '../types';
 
@@ -240,10 +240,23 @@ export const PricingSection: React.FC<PricingSectionProps> = ({ onStartOrderWith
               </p>
             </div>
 
-            <div className="flex items-baseline gap-2 bg-obsidian-900 border border-orange-950 px-5 py-2.5 rounded-2xl">
-              <span className="text-3xl font-mono font-black text-white">{sliderArea.toLocaleString('tr-TR')}</span>
-              <span className="text-sm font-bold text-orange-400">m²</span>
-              <span className="text-xs text-slate-400 font-mono">({pricing.areaDonum} Dönüm)</span>
+            <div className="flex items-center gap-2 bg-obsidian-900 border-2 border-orange-950 focus-within:border-orange-500 focus-within:ring-2 focus-within:ring-orange-500/30 px-4 py-2 rounded-2xl transition-all group">
+              <input
+                type="number"
+                min="100"
+                max="50000"
+                step="10"
+                value={sliderArea || ''}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setSliderArea(val > 0 ? val : 0);
+                }}
+                className="w-24 sm:w-28 text-2xl sm:text-3xl font-mono font-black text-white bg-transparent outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text"
+                title="Arsa alanını elle yazabilirsiniz"
+              />
+              <span className="text-sm font-bold text-orange-400 select-none">m²</span>
+              <span className="text-xs text-slate-400 font-mono select-none">({pricing.areaDonum} Dönüm)</span>
+              <Edit3 className="w-3.5 h-3.5 text-orange-500/60 group-hover:text-orange-400 group-focus-within:text-orange-400 shrink-0" />
             </div>
           </div>
 

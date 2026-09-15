@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, ArrowRight, CheckCircle2, ShieldCheck, Layers, ChevronRight, CheckSquare, Square, Phone } from 'lucide-react';
+import { Sparkles, ArrowRight, CheckCircle2, ShieldCheck, Layers, ChevronRight, CheckSquare, Square, Phone, Edit3 } from 'lucide-react';
 import { calculatePricing, formatTL, DEFAULT_SERVICES } from '../utils/pricing';
 import type { SelectedServices } from '../types';
 
@@ -236,11 +236,22 @@ export const Hero: React.FC<HeroProps> = ({ onStartOrderWithConfig, onOpenOrderW
                       <span className="text-xs font-bold text-amber-200 uppercase tracking-wider">Arsa Alanı:</span>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      <div className="flex items-baseline gap-1 bg-obsidian-900/90 border border-amber-500/40 px-3 py-1 rounded-xl shadow-inner">
-                        <span className="text-2xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-orange-400">
-                          {heroArea.toLocaleString('tr-TR')}
-                        </span>
-                        <span className="text-xs font-bold text-amber-400">m²</span>
+                      <div className="flex items-center gap-1 bg-obsidian-900/95 border-2 border-amber-500/60 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-500/30 px-3 py-1 rounded-xl shadow-inner transition-all group">
+                        <input
+                          type="number"
+                          min="100"
+                          max="50000"
+                          step="10"
+                          value={heroArea || ''}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setHeroArea(val > 0 ? val : 0);
+                          }}
+                          className="w-24 text-2xl font-black font-mono text-amber-200 bg-transparent outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text"
+                          title="Arsa alanını elle yazabilirsiniz"
+                        />
+                        <span className="text-xs font-bold text-amber-400 select-none">m²</span>
+                        <Edit3 className="w-3 h-3 text-amber-500/60 group-hover:text-amber-400 group-focus-within:text-amber-400 shrink-0" />
                       </div>
                       <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-1 rounded-xl text-[11px] font-bold font-mono">
                         {pricing.areaDonum} Dönüm

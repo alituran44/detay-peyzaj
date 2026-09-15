@@ -26,6 +26,7 @@ import {
   Upload,
   Truck,
   RefreshCw,
+  Edit3,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { calculatePricing, formatTL, DEFAULT_SERVICES } from '../utils/pricing';
@@ -1208,11 +1209,22 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <div className="flex items-baseline gap-1 bg-obsidian-900/90 border border-amber-500/50 px-4 py-1.5 rounded-2xl shadow-inner">
-                      <span className="text-3xl sm:text-4xl font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-orange-400">
-                        {formData.areaM2.toLocaleString('tr-TR')}
-                      </span>
-                      <span className="text-sm font-bold text-amber-400">m²</span>
+                    <div className="flex items-center gap-1.5 bg-obsidian-900/95 border-2 border-amber-500/60 focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-500/30 px-3.5 py-1.5 rounded-2xl shadow-inner transition-all group">
+                      <input
+                        type="number"
+                        min="100"
+                        max="50000"
+                        step="10"
+                        value={formData.areaM2 || ''}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setFormData({ ...formData, areaM2: val > 0 ? val : 0 });
+                        }}
+                        className="w-28 sm:w-36 text-3xl sm:text-4xl font-black font-mono text-amber-200 bg-transparent outline-none text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-text"
+                        title="Arsa alanını elle yazabilirsiniz"
+                      />
+                      <span className="text-sm font-bold text-amber-400 select-none">m²</span>
+                      <Edit3 className="w-3.5 h-3.5 text-amber-500/60 group-hover:text-amber-400 group-focus-within:text-amber-400 shrink-0" />
                     </div>
                     <span className="bg-amber-500/20 text-amber-300 border border-amber-500/50 px-3 py-2 rounded-2xl text-xs sm:text-sm font-bold font-mono">
                       {pricing.areaDonum} Dönüm
