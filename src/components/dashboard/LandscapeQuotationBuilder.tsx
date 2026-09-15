@@ -544,19 +544,20 @@ export const LandscapeQuotationBuilder: React.FC = () => {
           <style>
             @page {
               size: A4 portrait;
-              margin: 6mm 8mm;
+              margin: 4mm 6mm;
             }
             * {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
               box-sizing: border-box;
             }
-            body {
+            html, body {
               background: #ffffff !important;
               color: #000000 !important;
               margin: 0 !important;
               padding: 0 !important;
               font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+              page-break-inside: avoid !important;
             }
             .printable-quotation {
               width: 100% !important;
@@ -565,6 +566,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
               margin: 0 !important;
               border: none !important;
               box-shadow: none !important;
+              page-break-inside: avoid !important;
             }
             table {
               border-collapse: collapse !important;
@@ -575,7 +577,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
               color: #ffffff !important;
             }
             td, th {
-              border-color: #94a3b8 !important;
+              border-color: #cbd5e1 !important;
             }
           </style>
         </head>
@@ -1509,29 +1511,28 @@ export const LandscapeQuotationBuilder: React.FC = () => {
           {/* 📄 A4 PRINTABLE DOCUMENT CONTAINER */}
           <div
             ref={printRef}
-            className="printable-quotation bg-white text-black p-6 sm:p-8 rounded-2xl shadow-2xl max-w-5xl mx-auto font-sans border border-slate-300 print:border-none print:shadow-none print:p-0 print:m-0"
-            style={{ minHeight: '1120px' }}
+            className="printable-quotation bg-white text-black p-4 sm:p-5 rounded-2xl shadow-2xl max-w-4xl mx-auto font-sans border border-slate-300 print:border-none print:shadow-none print:p-0 print:m-0"
           >
             
             {/* Form Title & Top Banner */}
-            <div className="border-b-2 border-emerald-800 pb-2 mb-3 flex items-center justify-between">
+            <div className="border-b-2 border-emerald-800 pb-1.5 mb-1.5 flex items-center justify-between">
               <div>
-                <h1 className="text-base sm:text-lg font-black tracking-wide text-emerald-950 uppercase font-serif">
+                <h1 className="text-sm sm:text-base font-black tracking-wide text-emerald-950 uppercase font-serif">
                   DETAY PEYZAJ | PEYZAJ UYGULAMA TEKLİF FORMU
                 </h1>
-                <p className="text-[10px] text-slate-600 font-mono">www.detaypeyzaj.com.tr • Profesyonel Peyzaj Proje ve Uygulama Hizmetleri</p>
+                <p className="text-[8.5px] text-slate-600 font-mono">www.detaypeyzaj.com.tr • Profesyonel Peyzaj Proje ve Uygulama Hizmetleri</p>
               </div>
-              <div className="h-8">
-                <img src="/logo-detay.png" alt="Detay Peyzaj" className="h-8 w-auto object-contain" />
+              <div className="h-7 flex items-center">
+                <img src="/logo-detay.png" alt="Detay Peyzaj" className="h-7 w-auto object-contain" />
               </div>
             </div>
 
-            {/* Header 3-Column Info Grid */}
-            <div className="grid grid-cols-2 gap-2 text-[10px] leading-tight mb-3">
+            {/* Header 2-Column Info Grid */}
+            <div className="grid grid-cols-2 gap-1.5 text-[8.5px] leading-tight mb-1.5">
               
               {/* Firma Bilgileri */}
-              <div className="border border-slate-400 rounded p-2 bg-slate-50 space-y-1">
-                <div className="font-bold text-emerald-900 border-b border-slate-300 pb-0.5 uppercase tracking-wider text-[9px]">
+              <div className="border border-slate-300 rounded p-1.5 bg-slate-50 space-y-0.5">
+                <div className="font-bold text-emerald-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[8px]">
                   FİRMA BİLGİLERİ
                 </div>
                 <div className="grid grid-cols-3 gap-1">
@@ -1543,7 +1544,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
                   <span className="col-span-2 text-slate-800">{activeQuotation.companyAddress}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
-                  <span className="font-semibold text-slate-700">Telefon / E-posta:</span>
+                  <span className="font-semibold text-slate-700">Tel / E-posta:</span>
                   <span className="col-span-2 text-slate-800">{activeQuotation.companyPhone} • {activeQuotation.companyEmail}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-1">
@@ -1553,11 +1554,11 @@ export const LandscapeQuotationBuilder: React.FC = () => {
               </div>
 
               {/* Teklif Bilgileri */}
-              <div className="border border-slate-400 rounded p-2 bg-slate-50 space-y-1">
-                <div className="font-bold text-emerald-900 border-b border-slate-300 pb-0.5 uppercase tracking-wider text-[9px]">
+              <div className="border border-slate-300 rounded p-1.5 bg-slate-50 space-y-0.5">
+                <div className="font-bold text-emerald-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[8px]">
                   TEKLİF BİLGİLERİ
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
                   <div className="grid grid-cols-2 gap-1">
                     <span className="font-semibold text-slate-700">Teklif No:</span>
                     <span className="font-mono font-bold text-slate-900">{activeQuotation.teklifNo}</span>
@@ -1588,11 +1589,11 @@ export const LandscapeQuotationBuilder: React.FC = () => {
             </div>
 
             {/* Müşteri ve Proje Bilgileri Strip */}
-            <div className="border border-slate-400 rounded p-2 bg-emerald-50/40 text-[10px] leading-tight mb-3">
-              <div className="font-bold text-emerald-900 border-b border-slate-300 pb-0.5 uppercase tracking-wider text-[9px] mb-1">
+            <div className="border border-slate-300 rounded p-1.5 bg-emerald-50/40 text-[8.5px] leading-tight mb-1.5">
+              <div className="font-bold text-emerald-900 border-b border-emerald-200/60 pb-0.5 uppercase tracking-wider text-[8px] mb-1">
                 MÜŞTERİ VE PROJE BİLGİLERİ
               </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
                 <div className="flex justify-between">
                   <span className="font-semibold text-slate-700">Müşteri / Firma:</span>
                   <span className="font-black text-slate-900">{activeQuotation.musteriFirma || '-'}</span>
@@ -1629,121 +1630,121 @@ export const LandscapeQuotationBuilder: React.FC = () => {
             </div>
 
             {/* Official Table */}
-            <table className="w-full text-left text-[9.5px] border border-slate-400 mb-3 border-collapse">
+            <table className="w-full text-left text-[8px] leading-tight border border-slate-300 mb-1.5 border-collapse">
               <thead>
-                <tr className="bg-emerald-900 text-white font-bold text-center border-b border-slate-400">
-                  <th className="py-1 px-1 border-r border-slate-400 w-6">Sıra</th>
-                  <th className="py-1 px-2 border-r border-slate-400 w-24 text-left">İş Grubu</th>
-                  <th className="py-1 px-2 border-r border-slate-400 text-left">İş Kalemi / Açıklama</th>
-                  <th className="py-1 px-1 border-r border-slate-400 w-12">Birim</th>
-                  <th className="py-1 px-1 border-r border-slate-400 w-16 text-right">Miktar</th>
-                  <th className="py-1 px-2 border-r border-slate-400 w-20 text-right">Birim Fiyatı</th>
-                  <th className="py-1 px-2 border-r border-slate-400 w-24 text-right">Tutar</th>
-                  <th className="py-1 px-2 text-left">Not / Marka-Model</th>
+                <tr className="bg-emerald-900 text-white font-bold text-center border-b border-slate-300">
+                  <th className="py-0.5 px-1 border-r border-slate-400 w-5">Sıra</th>
+                  <th className="py-0.5 px-1.5 border-r border-slate-400 w-20 text-left">İş Grubu</th>
+                  <th className="py-0.5 px-1.5 border-r border-slate-400 text-left">İş Kalemi / Açıklama</th>
+                  <th className="py-0.5 px-1 border-r border-slate-400 w-10">Birim</th>
+                  <th className="py-0.5 px-1 border-r border-slate-400 w-12 text-right">Miktar</th>
+                  <th className="py-0.5 px-1.5 border-r border-slate-400 w-16 text-right">Birim Fiyat</th>
+                  <th className="py-0.5 px-1.5 border-r border-slate-400 w-20 text-right">Tutar</th>
+                  <th className="py-0.5 px-1.5 text-left">Not / Model</th>
                 </tr>
               </thead>
               <tbody>
                 {activeQuotation.items.map((item, idx) => (
-                  <tr key={item.id || idx} className={`border-b border-slate-300 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}`}>
-                    <td className="py-1 px-1 text-center font-mono border-r border-slate-300">{idx + 1}</td>
-                    <td className="py-1 px-2 font-bold text-slate-800 border-r border-slate-300">{item.isGrubu}</td>
-                    <td className="py-1 px-2 text-slate-900 border-r border-slate-300">{item.aciklama}</td>
-                    <td className="py-1 px-1 text-center font-mono border-r border-slate-300">{item.birim}</td>
-                    <td className="py-1 px-1 text-right font-mono border-r border-slate-300">
+                  <tr key={item.id || idx} className={`border-b border-slate-200 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}`}>
+                    <td className="py-0.5 px-1 text-center font-mono border-r border-slate-200">{idx + 1}</td>
+                    <td className="py-0.5 px-1.5 font-bold text-slate-800 border-r border-slate-200">{item.isGrubu}</td>
+                    <td className="py-0.5 px-1.5 text-slate-900 border-r border-slate-200">{item.aciklama}</td>
+                    <td className="py-0.5 px-1 text-center font-mono border-r border-slate-200">{item.birim}</td>
+                    <td className="py-0.5 px-1 text-right font-mono border-r border-slate-200">
                       {item.miktar > 0 ? item.miktar.toLocaleString('tr-TR') : '0,00'}
                     </td>
-                    <td className="py-1 px-2 text-right font-mono border-r border-slate-300">
+                    <td className="py-0.5 px-1.5 text-right font-mono border-r border-slate-200">
                       {item.birimFiyat > 0 ? formatTL(item.birimFiyat) : '₺0,00'}
                     </td>
-                    <td className="py-1 px-2 text-right font-mono font-bold text-slate-900 border-r border-slate-300">
+                    <td className="py-0.5 px-1.5 text-right font-mono font-bold text-slate-900 border-r border-slate-200">
                       {item.tutar > 0 ? formatTL(item.tutar) : '₺0,00'}
                     </td>
-                    <td className="py-1 px-2 text-slate-600 text-[9px]">{item.notModel || '-'}</td>
+                    <td className="py-0.5 px-1.5 text-slate-600 text-[7.5px]">{item.notModel || '-'}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
 
             {/* Totals Box */}
-            <div className="flex justify-end mb-3 text-[10px]">
-              <div className="w-72 border border-slate-400 rounded overflow-hidden">
-                <div className="flex justify-between bg-slate-100 p-1.5 border-b border-slate-300">
+            <div className="flex justify-end mb-1.5 text-[8.5px]">
+              <div className="w-64 border border-slate-300 rounded overflow-hidden">
+                <div className="flex justify-between bg-slate-100 px-2 py-0.5 border-b border-slate-200">
                   <span className="font-bold text-slate-800">Ara Toplam:</span>
                   <span className="font-mono font-bold text-slate-900">{formatTL(araToplam)}</span>
                 </div>
                 {indirimTutari > 0 && (
-                  <div className="flex justify-between p-1.5 border-b border-slate-300 bg-white">
+                  <div className="flex justify-between px-2 py-0.5 border-b border-slate-200 bg-white">
                     <span className="text-slate-700">İndirim Tutarı (%{activeQuotation.indirimOrani}):</span>
                     <span className="font-mono font-bold text-emerald-700">-{formatTL(indirimTutari)}</span>
                   </div>
                 )}
-                <div className="flex justify-between p-1.5 border-b border-slate-300 bg-white">
+                <div className="flex justify-between px-2 py-0.5 border-b border-slate-200 bg-white">
                   <span className="text-slate-700">KDV Tutarı (%{activeQuotation.kdvOrani}):</span>
                   <span className="font-mono text-slate-900">+{formatTL(kdvTutari)}</span>
                 </div>
-                <div className="flex justify-between bg-emerald-900 text-white p-2 font-black">
-                  <span className="text-xs">GENEL TOPLAM:</span>
-                  <span className="font-mono text-sm">{formatTL(genelToplam)} (KDV DAHİL)</span>
+                <div className="flex justify-between bg-emerald-900 text-white px-2 py-1 font-black">
+                  <span className="text-[9.5px]">GENEL TOPLAM:</span>
+                  <span className="font-mono text-[10px]">{formatTL(genelToplam)} (KDV DAHİL)</span>
                 </div>
               </div>
             </div>
 
             {/* Ödeme Koşulları Strip */}
-            <div className="border border-slate-400 rounded p-2 bg-slate-50 mb-3 text-[9.5px]">
-              <div className="font-bold text-emerald-900 border-b border-slate-300 pb-0.5 uppercase tracking-wider text-[9px] mb-1.5">
+            <div className="border border-slate-300 rounded p-1.5 bg-slate-50 mb-1.5 text-[8px]">
+              <div className="font-bold text-emerald-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[7.5px] mb-1">
                 ÖDEME PLANI VE DAĞILIMI
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-white p-1.5 rounded border border-slate-300">
-                  <div className="font-bold text-slate-700 text-[9px]">PEŞİN AVANS (%{activeQuotation.pesinYuzde})</div>
-                  <div className="font-mono font-bold text-emerald-900 text-xs mt-0.5">{formatTL(pesinTutar)}</div>
+              <div className="grid grid-cols-3 gap-1.5 text-center">
+                <div className="bg-white p-1 rounded border border-slate-200">
+                  <div className="font-bold text-slate-700 text-[7.5px]">PEŞİN AVANS (%{activeQuotation.pesinYuzde})</div>
+                  <div className="font-mono font-bold text-emerald-900 text-[9.5px] mt-0.5">{formatTL(pesinTutar)}</div>
                 </div>
-                <div className="bg-white p-1.5 rounded border border-slate-300">
-                  <div className="font-bold text-slate-700 text-[9px]">İŞ ESNASINDA (%{activeQuotation.isEsnasindaYuzde})</div>
-                  <div className="font-mono font-bold text-emerald-900 text-xs mt-0.5">{formatTL(isEsnasindaTutar)}</div>
+                <div className="bg-white p-1 rounded border border-slate-200">
+                  <div className="font-bold text-slate-700 text-[7.5px]">İŞ ESNASINDA (%{activeQuotation.isEsnasindaYuzde})</div>
+                  <div className="font-mono font-bold text-emerald-900 text-[9.5px] mt-0.5">{formatTL(isEsnasindaTutar)}</div>
                 </div>
-                <div className="bg-white p-1.5 rounded border border-slate-300">
-                  <div className="font-bold text-slate-700 text-[9px]">İŞ TESLİMİNDE (%{activeQuotation.isTeslimindeYuzde})</div>
-                  <div className="font-mono font-bold text-emerald-900 text-xs mt-0.5">{formatTL(isTeslimindeTutar)}</div>
+                <div className="bg-white p-1 rounded border border-slate-200">
+                  <div className="font-bold text-slate-700 text-[7.5px]">İŞ TESLİMİNDE (%{activeQuotation.isTeslimindeYuzde})</div>
+                  <div className="font-mono font-bold text-emerald-900 text-[9.5px] mt-0.5">{formatTL(isTeslimindeTutar)}</div>
                 </div>
               </div>
             </div>
 
-            {/* Teklif Şartları ve Açıklamalar */}
-            <div className="border border-slate-400 rounded p-2 bg-white mb-4 text-[9px] leading-tight">
-              <div className="font-bold text-emerald-900 border-b border-slate-300 pb-0.5 uppercase tracking-wider text-[8.5px] mb-1">
+            {/* Teklif Şartları ve Açıklamalar (2 Sütunlu Kompakt Düzen) */}
+            <div className="border border-slate-300 rounded p-1.5 bg-white mb-1.5 text-[7.5px] leading-tight">
+              <div className="font-bold text-emerald-900 border-b border-slate-200 pb-0.5 uppercase tracking-wider text-[7.5px] mb-1">
                 TEKLİF ŞARTLARI VE AÇIKLAMALAR
               </div>
-              <ol className="list-decimal pl-4 space-y-0.5 text-slate-800">
+              <ol className="grid grid-cols-2 gap-x-3 gap-y-0.5 list-decimal pl-3.5 text-slate-800">
                 {activeQuotation.sartlar.map((s, idx) => (
-                  <li key={idx}>{s}</li>
+                  <li key={idx} className="pr-1">{s}</li>
                 ))}
               </ol>
             </div>
 
             {/* İmza & Kaşe Alanları */}
-            <div className="grid grid-cols-2 gap-8 text-[9.5px] pt-2 border-t border-slate-400">
-              <div className="text-center space-y-8">
+            <div className="grid grid-cols-2 gap-6 text-[8px] pt-1.5 border-t border-slate-300">
+              <div className="text-center space-y-3">
                 <div>
                   <div className="font-bold text-slate-900 uppercase">TEKLİFİ HAZIRLAYAN</div>
-                  <div className="text-slate-600 text-[8.5px]">{activeQuotation.companyName}</div>
+                  <div className="text-slate-600 text-[7.5px]">{activeQuotation.companyName}</div>
                   <div className="text-slate-800 font-semibold">{activeQuotation.hazirlayan}</div>
                 </div>
-                <div className="text-slate-400 text-[8.5px]">Ad Soyad / Kaşe / İmza</div>
+                <div className="text-slate-400 text-[7.5px]">Ad Soyad / Kaşe / İmza</div>
               </div>
 
-              <div className="text-center space-y-8">
+              <div className="text-center space-y-3">
                 <div>
                   <div className="font-bold text-slate-900 uppercase">MÜŞTERİ ONAYI</div>
-                  <div className="text-slate-600 text-[8.5px]">{activeQuotation.musteriFirma || 'Müşteri'}</div>
+                  <div className="text-slate-600 text-[7.5px]">{activeQuotation.musteriFirma || 'Müşteri'}</div>
                   <div className="text-slate-800 font-semibold">{activeQuotation.yetkiliKisi || '-'}</div>
                 </div>
-                <div className="text-slate-400 text-[8.5px]">Ad Soyad / Kaşe / İmza</div>
+                <div className="text-slate-400 text-[7.5px]">Ad Soyad / Kaşe / İmza</div>
               </div>
             </div>
 
             {/* Footer Tagline */}
-            <div className="text-center text-[8px] text-slate-500 pt-4 mt-4 border-t border-slate-200">
+            <div className="text-center text-[7.5px] text-slate-500 pt-1 mt-1 border-t border-slate-200">
               www.detaypeyzaj.com.tr | Profesyonel peyzaj proje ve uygulama hizmetleri • Tel: 0 544 477 20 44
             </div>
 
