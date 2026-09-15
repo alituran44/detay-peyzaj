@@ -608,8 +608,20 @@ export const LandscapeQuotationBuilder: React.FC = () => {
     }, 150);
   };
 
+  // Sharable Direct Proposal Link Generator (Opens A4 Public Proposal View)
+  const generateSharableQuotationLink = () => {
+    try {
+      const jsonStr = JSON.stringify(activeQuotation);
+      const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+      return `https://detaypeyzaj.com.tr/?teklif=${encodeURIComponent(encoded)}`;
+    } catch {
+      return `https://detaypeyzaj.com.tr`;
+    }
+  };
+
   // WhatsApp Message Generator
   const generateWhatsAppText = () => {
+    const sharableUrl = generateSharableQuotationLink();
     const lines = [
       `🌿 *DETAY PEYZAJ & MİMARLIK — PEYZAJ UYGULAMA TEKLİFİ*`,
       `*Teklif No:* ${activeQuotation.teklifNo} | *Tarih:* ${activeQuotation.tarih}`,
@@ -639,7 +651,9 @@ export const LandscapeQuotationBuilder: React.FC = () => {
     lines.push(`2. İş Esnasında (%${activeQuotation.isEsnasindaYuzde}): ${formatTL(isEsnasindaTutar)}`);
     lines.push(`3. İş Tesliminde (%${activeQuotation.isTeslimindeYuzde}): ${formatTL(isTeslimindeTutar)}`);
     lines.push(`━━━━━━━━━━━━━━━━━━━━`);
-    lines.push(`📄 *Resmi Antetli A4 PDF Teklifi:* https://detaypeyzaj.com.tr`);
+    lines.push(`📄 *Resmi Antetli A4 PDF Teklifi Görüntüle & İndir:*`);
+    lines.push(`${sharableUrl}`);
+    lines.push(`━━━━━━━━━━━━━━━━━━━━`);
     lines.push(`📞 *Teklifi Hazırlayan:* Hasan Hüseyin Yıldırım (Peyzaj Mimarı) - 0544 477 20 44`);
     lines.push(`✉️ *E-Posta:* peyzajdetay@gmail.com`);
 
@@ -651,7 +665,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
     const cleanPhone = rawPhone.startsWith('90') ? rawPhone : rawPhone.startsWith('0') ? `9${rawPhone}` : `90${rawPhone}`;
     const target = cleanPhone.length >= 10 ? cleanPhone : '905444772044';
     
-    // Open WhatsApp with complete formatted proposal
+    // Open WhatsApp with complete formatted proposal and live PDF link
     window.open(`https://wa.me/${target}?text=${generateWhatsAppText()}`, '_blank');
   };
 
@@ -999,7 +1013,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
             </div>
             <div>
               <div className="text-xs font-bold text-white">WhatsApp İle Gönder</div>
-              <div className="text-[10px] text-emerald-300/80">{activeQuotation.telefon || 'Müşteriye'} tek tıkla mesaj at</div>
+              <div className="text-[10px] text-emerald-300/80">A4 Teklif Linki & Özet Mesajı</div>
             </div>
           </div>
           <ArrowRight className="w-4 h-4 text-emerald-400 group-hover:translate-x-1 transition-transform" />
@@ -1026,6 +1040,20 @@ export const LandscapeQuotationBuilder: React.FC = () => {
           <ArrowRight className="w-4 h-4 text-amber-400 group-hover:translate-x-1 transition-transform" />
         </button>
 
+      </div>
+
+      {/* WhatsApp & PDF Kullanım Rehberi Şeridi */}
+      <div className="no-print bg-emerald-950/30 border border-emerald-500/30 p-3.5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-emerald-200">
+        <div className="flex items-start gap-2.5">
+          <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <span className="font-bold text-white block">WhatsApp PDF Gönderim Seçenekleri:</span>
+            <span className="text-[11px] text-emerald-300/90 block leading-relaxed">
+              <strong>1. Canlı A4 Linki İle:</strong> "WhatsApp İle Gönder" butonuna bastığınızda müşteriye hem özet metin hem de tek tıkla açılan antetli A4 teklif bağlantısı gider.<br/>
+              <strong>2. Doğrudan PDF Dosyası Olarak:</strong> "PDF İndir / Yazdır" butonuna basıp inen tek sayfalık PDF'i WhatsApp penceresine sürükleyip bırakarak doğrudan belge olarak iletebilirsiniz.
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}

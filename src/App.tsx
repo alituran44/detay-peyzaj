@@ -14,13 +14,16 @@ import { LegalModals, type LegalModalType } from './components/LegalModals';
 import { AuthModal } from './components/auth/AuthModal';
 import { CustomerPortalModal } from './components/dashboard/CustomerPortalModal';
 import { AdminDashboardModal } from './components/dashboard/AdminDashboardModal';
+import { PublicQuotationView } from './components/dashboard/PublicQuotationView';
+import type { LandscapeQuotation } from './components/dashboard/LandscapeQuotationBuilder';
 import { GoogleAdSenseBanner } from './components/ads/GoogleAdSenseBanner';
 import { MessageCircle, Sparkles, Calculator, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { DEFAULT_SERVICES } from './utils/pricing';
 import type { SelectedServices } from './types';
 
 function MainApp() {
-  const [currentView, setCurrentView] = useState<'home' | 'order' | 'admin' | 'customer'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'order' | 'admin' | 'customer' | 'quotation'>('home');
+  const [publicQuotation, setPublicQuotation] = useState<LandscapeQuotation | null>(null);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isCustomerPortalOpen, setIsCustomerPortalOpen] = useState<boolean>(false);
@@ -48,6 +51,27 @@ function MainApp() {
       const orderId = urlParams.get('orderId') || '';
       const txnId = urlParams.get('txnId') || '';
       const errorMsg = urlParams.get('error') || '';
+
+      // Check for public quotation link
+      const teklifParam = urlParams.get('teklif') || urlParams.get('teklifData');
+      if (teklifParam) {
+        try {
+          let jsonStr = '';
+          try {
+            jsonStr = decodeURIComponent(escape(atob(teklifParam)));
+          } catch {
+            jsonStr = decodeURIComponent(teklifParam);
+          }
+          const parsed = JSON.parse(jsonStr);
+          if (parsed && (parsed.teklifNo || parsed.items)) {
+            setPublicQuotation(parsed);
+            setCurrentView('quotation');
+            return;
+          }
+        } catch (err) {
+          console.warn('Failed to parse teklif param:', err);
+        }
+      }
 
       if (paymentStatus === 'success') {
         setPaymentNotice({
@@ -100,12 +124,18 @@ function MainApp() {
 
   const backToHome = () => {
     setCurrentView('home');
+    setPublicQuotation(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
     <>
-      {currentView === 'admin' ? (
+      {currentView === 'quotation' && publicQuotation ? (
+        <PublicQuotationView
+          quotation={publicQuotation}
+          onBackToHome={backToHome}
+        />
+      ) : currentView === 'admin' ? (
         <AdminDashboardModal
           isOpen={true}
           onClose={backToHome}
