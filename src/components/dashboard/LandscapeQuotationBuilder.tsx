@@ -499,7 +499,10 @@ export const LandscapeQuotationBuilder: React.FC = () => {
   };
 
   const handlePrint = () => {
-    window.print();
+    setViewMode('preview');
+    setTimeout(() => {
+      window.print();
+    }, 200);
   };
 
   // WhatsApp Message Generator
@@ -1216,7 +1219,7 @@ export const LandscapeQuotationBuilder: React.FC = () => {
       {/* 2. A4 PRINT & PREVIEW VIEW MODE (Birebir Kurumsal Form)                */}
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {(viewMode === 'preview' || viewMode === 'editor') && (
-        <div className={viewMode === 'editor' ? 'hidden' : 'block'}>
+        <div className={viewMode === 'editor' ? 'hidden print:block' : 'block'}>
           
           <div className="no-print bg-amber-950/40 border border-amber-500/40 p-4 rounded-2xl text-xs text-amber-200 flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">

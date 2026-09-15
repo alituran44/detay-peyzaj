@@ -441,48 +441,50 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
       {/* Main Page Dashboard Body */}
       <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
           
-          {/* Top 4 KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Gelen Toplam Ciro</span>
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="text-2xl font-black font-mono text-white">{formatTL(totalRevenue)}</div>
-              <div className="text-[10px] text-emerald-400 font-semibold">%100 Tahsil Edildi (KDV Dahil)</div>
-            </div>
-
-            <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Çizimdeki Projeler</span>
-                <Clock className="w-4 h-4 text-orange-400" />
-              </div>
-              <div className="text-2xl font-black font-mono text-orange-400">{activeProjectsCount} Proje</div>
-              <div className="text-[10px] text-slate-400">5 Günlük Takvimde</div>
-            </div>
-
-            <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Teslim Edilen Projeler</span>
-                <FileCheck className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="text-2xl font-black font-mono text-emerald-400">{completedProjectsCount} Proje</div>
-              <div className="text-[10px] text-slate-400">Müşteriye İletildi</div>
-            </div>
-
-            <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Toplam Arsa Alanı</span>
-                <Layers className="w-4 h-4 text-orange-400" />
-              </div>
-              <div className="text-2xl font-black font-mono text-white">{totalAreaM2.toLocaleString('tr-TR')} m²</div>
-              <div className="text-[10px] text-slate-400">{(totalAreaM2 / 1000).toFixed(1)} Dönüm Projelendirildi</div>
-            </div>
-          </div>
-
-          {/* Quick Action: Peyzaj Mimarı Teklif Formu Banner */}
+          {/* Top 4 KPI Cards (Only on general admin tabs, hidden in print) */}
           {activeTab !== 'quotation' && (
-            <div className="bg-gradient-to-r from-orange-950/80 via-obsidian-900 to-amber-950/60 p-5 rounded-3xl border-2 border-orange-500/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-glow">
+            <div className="no-print grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Gelen Toplam Ciro</span>
+                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-white">{formatTL(totalRevenue)}</div>
+                <div className="text-[10px] text-emerald-400 font-semibold">%100 Tahsil Edildi (KDV Dahil)</div>
+              </div>
+
+              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Çizimdeki Projeler</span>
+                  <Clock className="w-4 h-4 text-orange-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-orange-400">{activeProjectsCount} Proje</div>
+                <div className="text-[10px] text-slate-400">5 Günlük Takvimde</div>
+              </div>
+
+              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Teslim Edilen Projeler</span>
+                  <FileCheck className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-emerald-400">{completedProjectsCount} Proje</div>
+                <div className="text-[10px] text-slate-400">Müşteriye İletildi</div>
+              </div>
+
+              <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-950 space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Toplam Arsa Alanı</span>
+                  <Layers className="w-4 h-4 text-orange-400" />
+                </div>
+                <div className="text-2xl font-black font-mono text-white">{totalAreaM2.toLocaleString('tr-TR')} m²</div>
+                <div className="text-[10px] text-slate-400">{(totalAreaM2 / 1000).toFixed(1)} Dönüm Projelendirildi</div>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Action: Peyzaj Mimarı Teklif Formu Banner (Hidden in print) */}
+          {activeTab !== 'quotation' && (
+            <div className="no-print bg-gradient-to-r from-orange-950/80 via-obsidian-900 to-amber-950/60 p-5 rounded-3xl border-2 border-orange-500/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-glow">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-orange-500/20 border border-orange-500/50 flex items-center justify-center text-orange-400 shrink-0 shadow-glow-sm">
                   <FileText className="w-7 h-7" />

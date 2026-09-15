@@ -72,35 +72,61 @@
 
 /* Print Styles for Landscape Quotation & Official A4 Forms */
 @media print {
-  body {
+  html, body {
     background: #ffffff !important;
     color: #000000 !important;
     padding: 0 !important;
     margin: 0 !important;
+    min-height: 100% !important;
+    width: 100% !important;
   }
 
   .no-print,
   header,
   nav,
   footer,
-  aside {
+  aside,
+  button {
     display: none !important;
   }
 
+  /* Force printable-quotation to display cleanly */
   .printable-quotation {
     box-shadow: none !important;
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    border: 1px solid #cbd5e1 !important;
+    margin: 0 auto !important;
+    padding: 8mm !important;
     width: 100% !important;
     max-width: 100% !important;
     background: #ffffff !important;
     color: #000000 !important;
+    display: block !important;
+    page-break-inside: auto;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Table styling preservation */
+  .printable-quotation table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .printable-quotation th {
+    background-color: #064e3b !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printable-quotation td,
+  .printable-quotation th {
+    border-color: #94a3b8 !important;
   }
 
   @page {
     size: A4 portrait;
-    margin: 6mm 8mm;
+    margin: 4mm 6mm;
   }
 }
 
