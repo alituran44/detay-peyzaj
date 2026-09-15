@@ -35,6 +35,7 @@ import {
   ListTodo,
   AlertCircle,
   User,
+  ArrowRight,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { formatTL } from '../../utils/pricing';
@@ -470,6 +471,38 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
               <div className="text-[10px] text-slate-400">{(totalAreaM2 / 1000).toFixed(1)} Dönüm Projelendirildi</div>
             </div>
           </div>
+
+          {/* Quick Action: Peyzaj Mimarı Teklif Formu Banner */}
+          {activeTab !== 'quotation' && (
+            <div className="bg-gradient-to-r from-orange-950/80 via-obsidian-900 to-amber-950/60 p-5 rounded-3xl border-2 border-orange-500/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-glow">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-orange-500/20 border border-orange-500/50 flex items-center justify-center text-orange-400 shrink-0 shadow-glow-sm">
+                  <FileText className="w-7 h-7" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-serif font-bold text-white tracking-wide">
+                      📋 Peyzaj Mimarı Teklif Hazırlama Masası
+                    </h3>
+                    <span className="text-[10px] bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                      MİMARA ÖZEL
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Resmi A4 antetli teklif formu oluşturun, PDF olarak kaydedip yazdırın, müşteriye WhatsApp veya E-Posta ile doğrudan iletin.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('quotation')}
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs flex items-center gap-2.5 cursor-pointer shadow-glow hover:scale-105 transition-all whitespace-nowrap shrink-0 group border border-orange-400/40"
+              >
+                <span>Teklif Hazırlama Modülünü Aç</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          )}
 
           {activeTab === 'customers' ? (
             /* Main Customers & Files Management View */
