@@ -160,6 +160,41 @@ export const Footer: React.FC<FooterProps> = ({ onOpenLegalModal }) => {
 
         </div>
 
+        {/* Trust & Quality Badges Grid */}
+        <div className="border-t border-orange-950/80 pt-8 pb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="p-4 rounded-2xl bg-obsidian-900/60 border border-orange-500/20 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-orange-600/20 border border-orange-500/40 flex items-center justify-center text-orange-400 shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white">TMMOB Oda Standartları</div>
+                <div className="text-[11px] text-slate-400">Resmi belediye & ruhsat onaylı peyzaj mimarlığı projeleri</div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-obsidian-900/60 border border-emerald-500/20 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white">48 Saatte Revizyon Garantisi</div>
+                <div className="text-[11px] text-slate-400">Tasarım sürecinde hızlı ve koşulsuz mimari revizyon desteği</div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-obsidian-900/60 border border-amber-500/20 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <Lock className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white">256-Bit SSL & 3D Secure 2.0</div>
+                <div className="text-[11px] text-slate-400">Paynkolay & Aktif Bank lisanslı PCI-DSS uyumlu güvenli ödeme</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Payment & Security Logos Row */}
         <div className="border-t border-orange-950 pt-8 pb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-wrap">

@@ -27,6 +27,7 @@ import {
   Truck,
   RefreshCw,
   Edit3,
+  Lock,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { calculatePricing, formatTL, DEFAULT_SERVICES } from '../utils/pricing';
@@ -96,6 +97,8 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
     };
   });
 
+  const [paymentPlan, setPaymentPlan] = useState<'full' | 'deposit'>('full');
+
   const [cardInfo, setCardInfo] = useState({
     cardNumber: '',
     cardHolder: '',
@@ -154,6 +157,12 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
   if (!isOpen) return null;
 
   const pricing = calculatePricing(formData.areaM2, formData.selectedServices, formData.shippingOption);
+  const payableAmount = paymentPlan === 'deposit' ? Math.round(pricing.finalPrice / 2) : pricing.finalPrice;
+  const depositRemainingAmount = pricing.finalPrice - payableAmount;
+
+  const whatsappConsultationMessage = encodeURIComponent(
+    `Merhaba Hasan Bey,\n${formData.areaM2} m² arsam için peyzaj projesi hakkında bilgi ve sipariş desteği almak istiyorum.`
+  );
 
   const toggleService = (key: keyof SelectedServices) => {
     const next = { ...formData.selectedServices, [key]: !formData.selectedServices[key] };
@@ -502,7 +511,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             orderId: generatedOrderId,
-            amount: pricing.finalPrice,
+            amount: payableAmount,
             cardInfo: {
               cardNumber: cleanCard,
               expiry: cardInfo.expiry,
@@ -586,7 +595,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           orderId: orderNumber || `DP-${Date.now()}`,
-          amount: pricing.finalPrice,
+          amount: payableAmount,
           is3DConfirm: true,
           smsCode: bank3DInput,
           cardInfo: {
@@ -612,15 +621,16 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
   };
 
   // Generate WhatsApp Order Brief
-  const whatsappMessage = encodeURIComponent(
-    `*DETAY PEYZAJ YENİ SİPARİŞİ (${orderNumber})*\n\n` +
+  const whatsappBriefMessage = encodeURIComponent(
+    `*DETAY PEYZAJ YENİ SİPARİŞİ (${orderNumber || 'DP-2026'})*\n\n` +
     `*Müşteri:* ${formData.invoice.type === 'bireysel' ? formData.invoice.fullName : formData.invoice.companyName}\n` +
     `*Telefon:* ${formData.invoice.phone}\n` +
     `*Konum:* ${formData.invoice.city} / ${formData.invoice.district}\n` +
     `*Arsa Alanı:* ${formData.areaM2} m² (${pricing.areaDonum} Dönüm)\n` +
     `*Hizmetler:* ${[formData.selectedServices.landscapeProject && 'Peyzaj', formData.selectedServices.visual3D && '3D Render', formData.selectedServices.irrigationProject && 'Sulama'].filter(Boolean).join(', ')}\n` +
     `*Kargo Teslimatı:* ${formData.shippingOption ? '📦 Evet (Adrese Fiziki Renkli Ozalit & Sunum Dosyası - 1.500 TL)' : '💻 Dijital Teslimat (AutoCAD DWG & E-Posta)'}\n` +
-    `*Tutar:* ${formatTL(pricing.finalPrice)} (KDV Dahil)\n` +
+    `*Ödeme Planı:* ${paymentPlan === 'deposit' ? '%50 Ön Ödeme (Kapora)' : 'Tam Ödeme (Tek Çekim)'}\n` +
+    `*Ödenen Tutar:* ${formatTL(payableAmount)} (KDV Dahil)\n` +
     `*Ödeme:* ${formData.paymentMethod === 'credit_card' ? '3D Secure Kredi Kartı' : 'Banka Havalesi'}`
   );
 
@@ -693,10 +703,20 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                   <span className="font-mono text-slate-300">{new Date().toLocaleString('tr-TR')}</span>
                 </div>
                 <div className="pt-2 border-t border-orange-950/60 flex justify-between items-center">
-                  <span className="font-bold text-slate-200">Ödenecek Tutar:</span>
-                  <span className="text-xl font-black font-mono text-orange-400">
-                    {formatTL(pricing.finalPrice)}
-                  </span>
+                  <div>
+                    <span className="font-bold text-slate-200 block">Ödenecek Tutar:</span>
+                    {paymentPlan === 'deposit' && (
+                      <span className="text-[10px] text-amber-400 font-mono font-bold">%50 Ön Ödeme (Kapora)</span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-black font-mono text-orange-400 block">
+                      {formatTL(payableAmount)}
+                    </span>
+                    {paymentPlan === 'deposit' && (
+                      <span className="text-[10px] text-slate-400">Kalan {formatTL(depositRemainingAmount)} teslimatta</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -746,20 +766,32 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                   className="w-full bg-obsidian-950 border border-orange-500/80 rounded-2xl py-3.5 px-4 text-center font-mono text-xl tracking-[0.4em] text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
                 
-                <div className="flex items-center justify-between text-[11px] text-slate-400 px-1">
-                  <span>Kalan Süre:</span>
-                  <span className="font-mono text-orange-400 font-bold">
-                    {Math.floor(bank3DCountdown / 60).toString().padStart(2, '0')}:{(bank3DCountdown % 60).toString().padStart(2, '0')}
-                  </span>
-                </div>
+                {bank3DError && (
+                  <div className="text-xs text-rose-400 bg-rose-950/50 p-2.5 rounded-xl border border-rose-900/60 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{bank3DError}</span>
+                  </div>
+                )}
               </div>
 
-              {bank3DError && (
-                <div className="p-3 rounded-xl bg-rose-950/60 border border-rose-800/80 text-rose-300 text-xs flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
-                  <span>{bank3DError}</span>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <div className="flex items-center gap-1.5 font-mono">
+                  <Clock className="w-4 h-4 text-orange-400" />
+                  <span>Kalan Süre: {Math.floor(bank3DCountdown / 60)}:{(bank3DCountdown % 60).toString().padStart(2, '0')}</span>
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+                    setBank3DSmsCode(newCode);
+                    setBank3DCountdown(180);
+                    setBank3DError(null);
+                  }}
+                  className="text-orange-400 hover:text-orange-300 text-xs underline cursor-pointer"
+                >
+                  Yeni Kod Gönder
+                </button>
+              </div>
 
               {/* Action Buttons */}
               <div className="space-y-2 pt-2">
@@ -770,11 +802,14 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                   className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-sm shadow-glow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {is3DVerifying ? (
-                    <span>Bankanızla Doğrulanıyor...</span>
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Banka 3D Onayı Doğrulanıyor...</span>
+                    </>
                   ) : (
                     <>
-                      <ShieldCheck className="w-5 h-5" />
-                      <span>3D Secure ile Ödemeyi Onayla</span>
+                      <CheckCircle2 className="w-5 h-5" />
+                      <span>3D Şifremi Onayla & Ödemeyi Tamamla ({formatTL(payableAmount)})</span>
                     </>
                   )}
                 </button>
@@ -837,10 +872,20 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                   </div>
                 </div>
                 <div className="pt-2 border-t border-orange-950/60 flex justify-between items-center">
-                  <span className="font-bold text-slate-200">Transfer Tutarı:</span>
-                  <span className="text-xl font-black font-mono text-orange-400">
-                    {formatTL(pricing.finalPrice)}
-                  </span>
+                  <div>
+                    <span className="font-bold text-slate-200 block">Transfer Tutarı:</span>
+                    {paymentPlan === 'deposit' && (
+                      <span className="text-[10px] text-amber-400 font-mono font-bold">%50 Ön Ödeme (Kapora)</span>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-black font-mono text-orange-400 block">
+                      {formatTL(payableAmount)}
+                    </span>
+                    {paymentPlan === 'deposit' && (
+                      <span className="text-[10px] text-slate-400">Kalan {formatTL(depositRemainingAmount)} teslimatta</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -896,7 +941,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
               </div>
 
               <div className="p-3.5 bg-orange-950/30 border border-orange-900/50 rounded-2xl text-[11px] text-slate-300 leading-relaxed">
-                💡 Banka uygulamanızdan yukarıdaki IBAN numarasına <strong>{formatTL(pricing.finalPrice)}</strong> FAST/Havale transferini yapıp dekontunuzu yükledikten sonra aşağıdaki butona basarak siparişinizi resmi olarak başlatabilirsiniz.
+                💡 Banka uygulamanızdan yukarıdaki IBAN numarasına <strong>{formatTL(payableAmount)}</strong> FAST/Havale transferini yapıp dekontunuzu yükledikten sonra aşağıdaki butona basarak siparişinizi resmi olarak başlatabilirsiniz.
               </div>
 
               {/* Buttons */}
@@ -1079,7 +1124,12 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                 </div>
                 <div className="flex justify-between border-b border-orange-950/80 pb-2.5">
                   <span className="text-slate-400">Ödenen Tutar (KDV Dahil):</span>
-                  <span className="font-mono font-black text-orange-400 text-sm">{formatTL(pricing.finalPrice)}</span>
+                  <div className="text-right">
+                    <span className="font-mono font-black text-orange-400 text-sm block">{formatTL(payableAmount)}</span>
+                    {paymentPlan === 'deposit' && (
+                      <span className="text-[10px] text-amber-300 font-mono">%50 Ön Ödeme (Kalan: {formatTL(depositRemainingAmount)})</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex justify-between pt-1">
                   <span className="text-slate-400">Tahmini Teslim Süresi:</span>
@@ -1102,7 +1152,7 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
                 <a
-                  href={`https://wa.me/905444772044?text=${whatsappMessage}`}
+                  href={`https://wa.me/905444772044?text=${whatsappBriefMessage}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full py-3 rounded-xl font-bold text-xs text-white bg-emerald-600 hover:bg-emerald-500 flex items-center justify-center gap-2 shadow-lg"
@@ -1377,18 +1427,26 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                       <FileCheck className="w-4 h-4 text-orange-400" />
                       <span>AutoCAD .DWG / Kroki Dosyası</span>
                     </div>
-                    <span className="text-[10px] bg-orange-950 text-orange-400 border border-orange-700/60 px-2 py-0.5 rounded font-mono font-bold">
-                      ZORUNLU (.DWG / .ZIP)
-                    </span>
+                    {formData.documents.sketchPlan ? (
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3 text-emerald-400" /> Yüklendi ({(formData.documents.sketchPlan.size / (1024 * 1024) || 1).toFixed(1)} MB) ✓
+                      </span>
+                    ) : (
+                      <span className="text-[10px] bg-orange-950 text-orange-400 border border-orange-700/60 px-2 py-0.5 rounded font-mono font-bold">
+                        ZORUNLU (.DWG / .ZIP)
+                      </span>
+                    )}
                   </div>
                   
                   {formData.documents.sketchPlan ? (
-                    <div className="p-4 rounded-xl bg-orange-950/30 border border-orange-500/60 flex items-center justify-between gap-3">
+                    <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/50 flex items-center justify-between gap-3 shadow-inner">
                       <div className="flex items-center gap-2.5 overflow-hidden">
-                        <File className="w-5 h-5 text-orange-400 shrink-0" />
+                        <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                          <File className="w-5 h-5" />
+                        </div>
                         <div className="truncate">
                           <p className="text-xs font-bold text-white truncate">{formData.documents.sketchPlan.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">{(formData.documents.sketchPlan.size / (1024 * 1024)).toFixed(2)} MB</p>
+                          <p className="text-[10px] text-emerald-300 font-mono">{(formData.documents.sketchPlan.size / (1024 * 1024)).toFixed(2)} MB • Hazır</p>
                         </div>
                       </div>
                       <button
@@ -1443,16 +1501,24 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                       <FileText className="w-4 h-4 text-orange-400" />
                       <span>Kroki veya Ek Belge (İsteğe Bağlı)</span>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono">İsteğe Bağlı</span>
+                    {formData.documents.titleDeed ? (
+                      <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3 text-emerald-400" /> Yüklendi ({(formData.documents.titleDeed.size / (1024 * 1024) || 1).toFixed(1)} MB) ✓
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-slate-400 font-mono">İsteğe Bağlı</span>
+                    )}
                   </div>
 
                   {formData.documents.titleDeed ? (
-                    <div className="p-4 rounded-xl bg-orange-950/30 border border-orange-500/60 flex items-center justify-between gap-3">
+                    <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/50 flex items-center justify-between gap-3 shadow-inner">
                       <div className="flex items-center gap-2.5 overflow-hidden">
-                        <File className="w-5 h-5 text-orange-400 shrink-0" />
+                        <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
                         <div className="truncate">
                           <p className="text-xs font-bold text-white truncate">{formData.documents.titleDeed.name}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">{(formData.documents.titleDeed.size / (1024 * 1024)).toFixed(2)} MB</p>
+                          <p className="text-[10px] text-emerald-300 font-mono">{(formData.documents.titleDeed.size / (1024 * 1024)).toFixed(2)} MB • Hazır</p>
                         </div>
                       </div>
                       <button
@@ -1488,6 +1554,11 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                     <ImageIcon className="w-4 h-4 text-orange-400" />
                     <span>Arsa Fotoğrafları & Çevre Videoları ({formData.documents.photos.length} Dosya Yüklendi)</span>
                   </div>
+                  {formData.documents.photos.length > 0 && (
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-mono font-bold">
+                      ✓ {formData.documents.photos.length} Fotoğraf Yüklendi
+                    </span>
+                  )}
                 </div>
 
                 <label className="border-2 border-dashed border-orange-950 hover:border-orange-500/50 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer transition-all bg-obsidian-900/50">
@@ -1507,13 +1578,13 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                     {formData.documents.photos.map((photo, idx) => (
                       <div
                         key={idx}
-                        className="p-2.5 rounded-xl bg-obsidian-900/80 border border-orange-950 flex items-center justify-between gap-2"
+                        className="p-2.5 rounded-xl bg-obsidian-900/80 border border-emerald-500/30 flex items-center justify-between gap-2"
                       >
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <ImageIcon className="w-4 h-4 text-orange-400 shrink-0" />
+                          <ImageIcon className="w-4 h-4 text-emerald-400 shrink-0" />
                           <div className="truncate">
-                            <p className="text-xs text-white truncate">{photo.name}</p>
-                            <p className="text-[10px] text-slate-500 font-mono">{(photo.size / (1024 * 1024)).toFixed(2)} MB</p>
+                            <p className="text-xs text-white truncate font-medium">{photo.name}</p>
+                            <p className="text-[10px] text-emerald-400 font-mono">{(photo.size / (1024 * 1024)).toFixed(2)} MB • Yüklendi ✓</p>
                           </div>
                         </div>
                         <button
@@ -1793,6 +1864,72 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
               </div>
             </div>
 
+            {/* Payment Plan Selector (Tam Ödeme vs %50 Ön Ödeme / Kapora) */}
+            <div className="space-y-3 bg-obsidian-950 p-5 rounded-2xl border border-orange-950">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  Ödeme Planınızı Seçin:
+                </span>
+                <span className="text-[10px] text-amber-400 bg-amber-950/60 border border-amber-800/60 px-2 py-0.5 rounded-full font-mono">
+                  Esnek Ödeme Seçeneği
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div
+                  onClick={() => setPaymentPlan('full')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    paymentPlan === 'full'
+                      ? 'bg-orange-950/40 border-orange-500 text-white shadow-glow-sm'
+                      : 'bg-obsidian-900/60 border-orange-950 text-slate-400 hover:border-orange-900'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        {paymentPlan === 'full' ? (
+                          <CheckSquare className="w-4 h-4 text-orange-400" />
+                        ) : (
+                          <Square className="w-4 h-4 text-slate-600" />
+                        )}
+                        <span>Tam Ödeme (Tek Çekim)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400">Proje bedelinin tamamı tek seferde ödenir.</p>
+                    </div>
+                    <span className="font-mono font-black text-sm text-white">{formatTL(pricing.finalPrice)}</span>
+                  </div>
+                </div>
+
+                <div
+                  onClick={() => setPaymentPlan('deposit')}
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                    paymentPlan === 'deposit'
+                      ? 'bg-amber-950/40 border-amber-500 text-white shadow-glow-sm'
+                      : 'bg-obsidian-900/60 border-orange-950 text-slate-400 hover:border-amber-900'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        {paymentPlan === 'deposit' ? (
+                          <CheckSquare className="w-4 h-4 text-amber-400" />
+                        ) : (
+                          <Square className="w-4 h-4 text-slate-600" />
+                        )}
+                        <span>%50 Ön Ödeme (Kapora)</span>
+                      </div>
+                      <p className="text-[11px] text-amber-300/80">Kalan %50 tutar proje önizlemesi onayınızda tahsil edilir.</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono font-black text-sm text-amber-400 block">{formatTL(payableAmount)}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Şimdi</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Payment Method Selector */}
             <div className="grid grid-cols-2 gap-4">
               <div
@@ -2015,6 +2152,33 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
               </div>
             )}
 
+            {/* Trust & Guarantee Badges Strip */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-obsidian-950 border border-orange-950/80 text-xs">
+              <div className="flex items-center gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-orange-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-white text-[11px]">TMMOB Standartları</div>
+                  <div className="text-[10px] text-slate-400">Ruhsat & belediye onaylı</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-white text-[11px]">48 Saatte Revizyon</div>
+                  <div className="text-[10px] text-slate-400">Koşulsuz çizim desteği</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-white text-[11px]">3D Secure 2.0</div>
+                  <div className="text-[10px] text-slate-400">Banka korumalı SSL</div>
+                </div>
+              </div>
+            </div>
+
             {/* Order Summary & Final Total */}
             <div className="bg-obsidian-950 p-5 rounded-2xl border border-orange-900/80 space-y-2.5 text-xs">
               <div className="flex justify-between text-slate-400">
@@ -2047,12 +2211,48 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                   <span className="font-mono">+ {formatTL(pricing.shippingFee)}</span>
                 </div>
               )}
-              <div className="pt-2 border-t border-orange-950 flex justify-between items-baseline">
-                <span className="text-sm font-bold text-white">Toplam Ödenecek Tutar (KDV Dahil):</span>
-                <span className="text-2xl sm:text-3xl font-black font-mono text-white">
-                  {formatTL(pricing.finalPrice)}
-                </span>
+
+              {paymentPlan === 'deposit' ? (
+                <>
+                  <div className="flex justify-between text-slate-400 pt-1 border-t border-orange-950">
+                    <span>Toplam Proje Bedeli (KDV Dahil):</span>
+                    <span className="font-mono text-slate-300 font-bold">{formatTL(pricing.finalPrice)}</span>
+                  </div>
+                  <div className="flex justify-between items-baseline pt-2 border-t border-amber-950/80">
+                    <div>
+                      <span className="text-sm font-bold text-amber-300 block">Şimdi Tahsil Edilecek Tutar (%50 Kapora):</span>
+                      <span className="text-[10px] text-slate-400">Kalan {formatTL(depositRemainingAmount)} proje önizlemesi onayınızda tahsil edilir</span>
+                    </div>
+                    <span className="text-2xl sm:text-3xl font-black font-mono text-amber-400">
+                      {formatTL(payableAmount)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="pt-2 border-t border-orange-950 flex justify-between items-baseline">
+                  <span className="text-sm font-bold text-white">Toplam Ödenecek Tutar (KDV Dahil):</span>
+                  <span className="text-2xl sm:text-3xl font-black font-mono text-white">
+                    {formatTL(pricing.finalPrice)}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Direct WhatsApp Consultation Button */}
+            <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-600/40 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-emerald-300">
+                <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>Aklınıza takılan bir detay mı var? Mimarımızla doğrudan görüşün:</span>
               </div>
+              <a
+                href={`https://wa.me/905444772044?text=${whatsappConsultationMessage}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 transition-colors shrink-0 shadow-sm"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>WhatsApp'tan Sor</span>
+              </a>
             </div>
 
             {/* Legal Terms Checkboxes with Clickable Modals */}
@@ -2135,12 +2335,12 @@ export const OrderWizard: React.FC<OrderWizardProps> = ({
                 ) : formData.paymentMethod === 'credit_card' ? (
                   <>
                     <ShieldCheck className="w-4 h-4" />
-                    <span>Paynkolay 3D Secure ile Güvenli Öde ({formatTL(pricing.finalPrice)})</span>
+                    <span>Paynkolay 3D Secure ile Güvenli Öde ({formatTL(payableAmount)})</span>
                   </>
                 ) : (
                   <>
                     <Building2 className="w-4 h-4" />
-                    <span>Havale / FAST Bildirimi Yap ({formatTL(pricing.finalPrice)})</span>
+                    <span>Havale / FAST Bildirimi Yap ({formatTL(payableAmount)})</span>
                   </>
                 )}
               </button>

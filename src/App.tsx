@@ -329,12 +329,12 @@ function MainApp() {
       )}
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+      <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex flex-col gap-2.5 sm:gap-3">
         
         {/* Floating Quick Calculator */}
         <button
           onClick={() => setIsCalculatorOpen(true)}
-          className="w-12 h-12 rounded-2xl bg-obsidian-900/90 hover:bg-obsidian-850 text-orange-400 border border-orange-500/50 shadow-xl flex items-center justify-center backdrop-blur-md transition-all hover:scale-105 cursor-pointer"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-obsidian-900/90 hover:bg-obsidian-850 text-orange-400 border border-orange-500/50 shadow-xl flex items-center justify-center backdrop-blur-md transition-all hover:scale-105 cursor-pointer"
           title="Fiyat Hesaplayıcı"
         >
           <Calculator className="w-5 h-5" />
@@ -345,24 +345,57 @@ function MainApp() {
           href="https://wa.me/905444772044?text=Merhaba,%20online%20peyzaj%20projesi%20hakkinda%20bilgi%20almak%20istiyorum."
           target="_blank"
           rel="noopener noreferrer"
-          className="w-12 h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-xl flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
           title="WhatsApp Destek"
         >
-          <MessageCircle className="w-6 h-6" />
+          <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6" />
         </a>
 
         {/* Floating Start Project */}
         {currentView === 'home' && (
           <button
             onClick={() => openOrderPage()}
-            className="px-4 py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs shadow-glow flex items-center gap-2 transition-all hover:scale-105 cursor-pointer"
+            className="hidden sm:flex px-4 py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-xs shadow-glow items-center gap-2 transition-all hover:scale-105 cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-orange-200 animate-pulse" />
-            <span className="hidden sm:inline">Online Proje Başlat</span>
+            <span>Online Proje Başlat</span>
           </button>
         )}
 
       </div>
+
+      {/* 📱 Mobil Sabit CTA (Sticky Bottom Bar) */}
+      {currentView === 'home' && (
+        <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-obsidian-950/95 backdrop-blur-xl border-t border-orange-500/40 px-4 py-2.5 flex items-center justify-between shadow-2xl animate-fade-in">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-xs font-black font-mono text-white">12.000 ₺'den Başlayan</span>
+            </div>
+            <span className="text-[10px] text-amber-300/90 font-mono">1 Dönüme Kadar Taban Fiyat</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsCalculatorOpen(true)}
+              className="px-3 py-2 rounded-xl bg-obsidian-900 border border-orange-500/50 text-orange-300 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+            >
+              <Calculator className="w-3.5 h-3.5" />
+              <span>Hesapla</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openOrderPage()}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 text-white font-bold text-xs shadow-glow flex items-center gap-1.5 cursor-pointer active:scale-95 transition-transform"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Proje Başlat</span>
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }
