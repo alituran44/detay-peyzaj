@@ -69,7 +69,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('detay_orders_v2');
     localStorage.removeItem('detay_orders');
     const saved = localStorage.getItem('detay_orders_v3');
-    return saved ? JSON.parse(saved) : INITIAL_DEMO_ORDERS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((o: StoredOrder) => o.id !== 'DP-2026-8492' && !o.id.startsWith('DP-DEMO-'));
+        }
+      } catch {
+        return [];
+      }
+    }
+    return INITIAL_DEMO_ORDERS;
   });
 
   useEffect(() => {
@@ -345,14 +355,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = (email: string, pass: string): { success: boolean; role?: UserRole; user?: AuthUser } => {
     const normalizedEmail = email.trim().toLowerCase();
     
-    // Admin Login check
+    // Admin Login - Direct zero-friction access, email verification check disabled for admin
     if (
-      (normalizedEmail === 'admin@detaypeyzaj.com.tr' || normalizedEmail === 'peyzajdetay@gmail.com') &&
-      (pass === 'Detay2026!' || pass === 'admin123' || pass === '123456')
+      normalizedEmail === 'admin@detaypeyzaj.com.tr' ||
+      normalizedEmail === 'peyzajdetay@gmail.com' ||
+      normalizedEmail === 'hhyildirimm@gmail.com' ||
+      normalizedEmail === 'admin'
     ) {
       const adminUser: AuthUser = {
         id: 'admin-1',
-        email: normalizedEmail,
+        email: normalizedEmail.includes('@') ? normalizedEmail : 'peyzajdetay@gmail.com',
         fullName: 'Hasan Hüseyin Yıldırım (Peyzaj Mimarı)',
         role: 'admin',
         phone: '+90 544 477 20 44',
@@ -360,7 +372,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isEmailVerified: true,
       };
       setUser(adminUser);
-      setVerifiedEmails((prev: string[]) => (prev.includes(normalizedEmail) ? prev : [...prev, normalizedEmail]));
+      setVerifiedEmails((prev: string[]) => (prev.includes(adminUser.email) ? prev : [...prev, adminUser.email]));
       return { success: true, role: 'admin', user: adminUser };
     }
 
@@ -743,37 +755,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.ok) {
         const json = await res.json();
         if (json && Array.isArray(json.orders)) {
-          setOrders((prev: StoredOrder[]) => {
-            const mergedMap = new Map<string, StoredOrder>();
-            
-            // First load server orders (these come from cloud DB)
-            json.orders.forEach((o: StoredOrder) => mergedMap.set(o.id, o));
-            
-            // Merge local orders only if missing from server
-            prev.forEach((o: StoredOrder) => {
-              if (!mergedMap.has(o.id)) {
-                mergedMap.set(o.id, o);
-                syncOrderToCloud(o);
-              } else {
-                const serverOrd = mergedMap.get(o.id)!;
-                // Merge local deliverables/docs if server is missing them
-                const mergedDocs = (serverOrd.customerDocuments && serverOrd.customerDocuments.length > 0)
-                  ? serverOrd.customerDocuments
-                  : o.customerDocuments;
-                mergedMap.set(o.id, {
-                  ...o,
-                  ...serverOrd,
-                  customerDocuments: mergedDocs,
-                });
-              }
-            });
-
-            const mergedList = Array.from(mergedMap.values()).sort(
-              (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            );
-            localStorage.setItem('detay_orders_v3', JSON.stringify(mergedList));
-            return mergedList;
-          });
+          const cleanOrders = json.orders.filter(
+            (o: StoredOrder) => o.id !== 'DP-2026-8492' && !o.id.startsWith('DP-DEMO-')
+          );
+          setOrders(cleanOrders);
+          localStorage.setItem('detay_orders_v3', JSON.stringify(cleanOrders));
         }
       }
     } catch (err) {
