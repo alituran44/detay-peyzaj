@@ -287,116 +287,46 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
     <div className="min-h-screen bg-obsidian-950 text-slate-100 flex flex-col selection:bg-orange-500 selection:text-white">
       {/* Top Navbar Header */}
       <header className="sticky top-0 z-40 bg-obsidian-950/95 backdrop-blur-md border-b border-orange-900/40 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+        {/* Row 1: Brand & Top Utilities */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4 border-b border-orange-950/80">
           
           {/* Left: Brand + Back Button + Title */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={onClose}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-obsidian-900 hover:bg-orange-950/60 border border-orange-900/60 text-orange-400 hover:text-orange-300 text-xs font-bold transition-all cursor-pointer shadow-sm group shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-obsidian-900 hover:bg-orange-950/60 border border-orange-900/60 text-orange-400 hover:text-orange-300 text-xs font-bold transition-all cursor-pointer shadow-sm group shrink-0"
               title="Ana Sayfaya Dön"
             >
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              <span>Ana Sayfaya Dön</span>
+              <span className="hidden sm:inline">Ana Sayfaya Dön</span>
             </button>
 
-            <div className="w-10 h-10 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400 shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
 
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-base sm:text-lg font-serif font-bold text-white tracking-wide">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-sm sm:text-base font-serif font-bold text-white tracking-wide whitespace-nowrap">
                   Detay Peyzaj Yönetici Paneli
                 </h1>
-                <span className="text-[10px] bg-orange-950 text-orange-400 border border-orange-600/80 px-2.5 py-0.5 rounded-full font-bold">
-                  YÖNETİCİ: {user?.fullName || 'Hasan Hüseyin Yıldırım'}
+                <span className="text-[10px] bg-orange-950 text-orange-400 border border-orange-600/80 px-2.5 py-0.5 rounded-full font-bold whitespace-nowrap">
+                  YÖNETİCİ: {user?.fullName || 'Hasan Hüseyin Yıldırım (Peyzaj Mimarı)'}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
-                Müşteri evrakları, pafta yükleme, ciro kontrolü ve e-fatura kesme merkezi
-              </p>
             </div>
           </div>
 
-          {/* Right: Tab Switchers & Actions */}
-          <div className="flex items-center justify-between lg:justify-end gap-2 sm:gap-3 flex-wrap">
-            {/* Tab switchers */}
-            <div className="flex items-center gap-1 bg-obsidian-900 p-1 rounded-2xl border border-orange-950 text-xs overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('customers')}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === 'customers'
-                    ? 'bg-orange-600 text-white shadow-glow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                👥 Müşteriler & Evraklar
-              </button>
-              <button
-                onClick={() => setActiveTab('tasks')}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                  activeTab === 'tasks'
-                    ? 'bg-orange-600 text-white shadow-glow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <CheckSquare className="w-3.5 h-3.5" />
-                <span>✅ Yapılan İşler & Kontrol Listesi</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('finance')}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer whitespace-nowrap ${
-                  activeTab === 'finance'
-                    ? 'bg-orange-600 text-white shadow-glow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                💰 Finans & Faturalar
-              </button>
-              <button
-                onClick={() => setActiveTab('mail_templates')}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                  activeTab === 'mail_templates'
-                    ? 'bg-orange-600 text-white shadow-glow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Mail className="w-3.5 h-3.5" />
-                <span>✉️ Mail Şablonları</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('quotation')}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                  activeTab === 'quotation'
-                    ? 'bg-orange-600 text-white shadow-glow-sm'
-                    : 'text-orange-400 hover:text-white bg-orange-950/40 hover:bg-orange-900/60 border border-orange-800/40'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>📋 Peyzaj Teklif Formu</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('payment_settings')}
-                className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-                  activeTab === 'payment_settings'
-                    ? 'bg-orange-600 text-white shadow-glow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Settings className="w-3.5 h-3.5" />
-                <span>⚙️ Paynkolay</span>
-              </button>
-            </div>
-
+          {/* Right: Quick Global Actions */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={handleRefreshOrders}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold text-orange-300 hover:text-white bg-obsidian-900 hover:bg-orange-950/60 border border-orange-900/80 flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-orange-300 hover:text-white bg-obsidian-900 hover:bg-orange-950/60 border border-orange-900/80 flex items-center gap-1.5 cursor-pointer transition-all shadow-sm"
               title="Sunucudaki güncel siparişleri ve evrakları çek"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-orange-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span>Canlı Yenile</span>
+              <span className="hidden md:inline">Canlı Yenile</span>
             </button>
 
             {orders.length > 0 && (
@@ -420,11 +350,89 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({ isOpen
                 logout();
                 onClose();
               }}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-red-300 hover:text-white bg-red-950/40 hover:bg-red-900 border border-red-800/60 flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
+              className="px-3 py-1.5 rounded-xl text-xs font-bold text-red-300 hover:text-white bg-red-950/40 hover:bg-red-900 border border-red-800/60 flex items-center gap-1.5 cursor-pointer transition-all shrink-0"
               title="Yönetici Hesabından Çıkış Yap"
             >
               <LogOut className="w-3.5 h-3.5" />
               <span>Çıkış Yap</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Row 2: Clean Navigation Tabs Bar */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 overflow-x-auto scrollbar-none">
+          <div className="flex items-center gap-1.5 min-w-max">
+            <button
+              onClick={() => setActiveTab('customers')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'customers'
+                  ? 'bg-orange-600 text-white shadow-glow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-obsidian-900'
+              }`}
+            >
+              <span>👥 Müşteriler & Evraklar</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === 'tasks'
+                  ? 'bg-orange-600 text-white shadow-glow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-obsidian-900'
+              }`}
+            >
+              <CheckSquare className="w-3.5 h-3.5" />
+              <span>✅ Yapılan İşler & Kontrol Listesi</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('finance')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'finance'
+                  ? 'bg-orange-600 text-white shadow-glow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-obsidian-900'
+              }`}
+            >
+              <span>💰 Finans & Faturalar</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('mail_templates')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === 'mail_templates'
+                  ? 'bg-orange-600 text-white shadow-glow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-obsidian-900'
+              }`}
+            >
+              <Mail className="w-3.5 h-3.5" />
+              <span>✉️ Mail Şablonları</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('quotation')}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 whitespace-nowrap ${
+                activeTab === 'quotation'
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-glow'
+                  : 'bg-orange-950/60 hover:bg-orange-900 text-orange-300 hover:text-white border border-orange-700/60'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>📋 Peyzaj Teklif Formu</span>
+              <span className="text-[9px] bg-white text-orange-900 px-1.5 py-0.2 rounded-full font-black uppercase">
+                YENİ
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('payment_settings')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+                activeTab === 'payment_settings'
+                  ? 'bg-orange-600 text-white shadow-glow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-obsidian-900'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              <span>⚙️ Paynkolay</span>
             </button>
           </div>
         </div>
